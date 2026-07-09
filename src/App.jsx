@@ -539,15 +539,20 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           {!isMentora&&<button onClick={onLogout} style={{background:"transparent",border:"none",color:"#f5ede8",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>Sair</button>}
         </div>
       </div>
-      <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
-        {[{l:"Saldo do Mês",v:fmt(saldoMesAtual),c:saldoMesAtual>=0?"#4caf7d":"#e05c5c"},{l:"Carteira",v:fmt(totalCarteira),c:"#90caf9"},{l:"Mês",v:mesAnoAtual(),c:C.dourado}].map(x=>(
-          <div key={x.l} style={{background:"rgba(0,0,0,0.2)",borderRadius:10,padding:"6px 12px",flex:1,minWidth:80,textAlign:"center"}}>
-            <div style={{fontSize:10,color:"#f5ede8aa"}}>{x.l}</div>
-            <div style={{fontSize:12,fontWeight:700,color:x.c}}>{x.v}</div>
-          </div>
-        ))}
-        <button onClick={()=>setModalMigManual(true)} style={{background:"rgba(0,0,0,0.2)",border:"none",borderRadius:10,padding:"6px 12px",color:C.dourado,fontSize:11,fontWeight:700,cursor:"pointer"}}>🔄 Migrar Saldo</button>
-      </div>
+      {(() => {
+        const ma=mesAnoAtual();
+        const entradasMes=movs.filter(m=>m.tipo==="entrada"&&mesAnoDeData(m.data)===ma).reduce((a,m)=>a+m.valor,0)+rendimentos.filter(r=>mesAnoDeData(r.data)===ma).reduce((a,r)=>a+r.valor,0);
+        const saidasMes=movs.filter(m=>m.tipo==="saida"&&mesAnoDeData(m.data)===ma).reduce((a,m)=>a+m.valor,0);
+        return(<div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
+          {[{l:"Entradas",v:fmt(entradasMes),c:"#4caf7d"},{l:"Saídas",v:fmt(saidasMes),c:"#e05c5c"},{l:"Carteira",v:fmt(totalCarteira),c:"#90caf9"},{l:"Saldo",v:fmt(saldoMesAtual),c:saldoMesAtual>=0?"#4caf7d":"#e05c5c"}].map(x=>(
+            <div key={x.l} style={{background:"rgba(0,0,0,0.2)",borderRadius:10,padding:"6px 10px",flex:1,minWidth:60,textAlign:"center"}}>
+              <div style={{fontSize:10,color:"#f5ede8aa"}}>{x.l}</div>
+              <div style={{fontSize:11,fontWeight:700,color:x.c}}>{x.v}</div>
+            </div>
+          ))}
+          <button onClick={()=>setModalMigManual(true)} style={{background:"rgba(0,0,0,0.2)",border:"none",borderRadius:10,padding:"6px 10px",color:C.dourado,fontSize:11,fontWeight:700,cursor:"pointer"}}>🔄</button>
+        </div>);
+      })()}
     </div>
 
     {/* Abas */}
