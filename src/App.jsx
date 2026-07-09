@@ -155,7 +155,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
   const [d,setD]=useState(dados);
   const [aba,setAba]=useState(0);
   const [salvando,setSalvando]=useState(false);
-  const abas=["Financeiro","Agendamentos","Rendimentos","Investimentos","Emocional","Crenças","Metas","Relatório","Mensagens"];
+  const abas=["Financeiro","Agendamentos","Rendimentos","Investimentos","Emocional","Crenças","Metas","Relatório","Mensagens","Perfil"];
   const msgFim=useRef(null);
   const [confirmarExcluir,setConfirmarExcluir]=useState(null);
   const [editando,setEditando]=useState(null);
@@ -204,6 +204,20 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
 
   const [msg,setMsg]=useState("");
   function enviar(){if(!msg.trim())return;upd("msgs",[...(d.msgs||[]),{id:Date.now(),de:isMentora?"mentora":"cliente",texto:msg,hora:agora()}]);setMsg("");}
+
+  // Perfil / troca de senha
+  const [senhaAtual,setSenhaAtual]=useState(""); const [senhaNova,setSenhaNova]=useState(""); const [senhaConf,setSenhaConf]=useState(""); const [msgSenha,setMsgSenha]=useState(""); const [erroSenha,setErroSenha]=useState("");
+  async function trocarSenha(){
+    setMsgSenha(""); setErroSenha("");
+    if(!senhaAtual||!senhaNova||!senhaConf){setErroSenha("Preencha todos os campos.");return;}
+    if(senhaAtual!==d.senha){setErroSenha("Senha atual incorreta.");return;}
+    if(senhaNova.length<6){setErroSenha("A nova senha deve ter no mínimo 6 caracteres.");return;}
+    if(senhaNova!==senhaConf){setErroSenha("As senhas não coincidem.");return;}
+    await upd("senha",senhaNova);
+    setSenhaAtual(""); setSenhaNova(""); setSenhaConf("");
+    setMsgSenha("Senha alterada com sucesso!");
+    setTimeout(()=>setMsgSenha(""),4000);
+  }
 
   function ModalEdicao(){
     if(!editando)return null;
@@ -454,6 +468,19 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <input value={msg} onChange={e=>setMsg(e.target.value)} onKeyDown={e=>e.key==="Enter"&&enviar()} placeholder="Digite sua mensagem..." style={{flex:1,background:CORES.cardClaro,border:`1px solid ${CORES.marsalaClaro}`,borderRadius:20,padding:"8px 14px",color:CORES.texto,fontSize:13,outline:"none"}}/>
           <button onClick={enviar} style={{background:CORES.dourado,border:"none",borderRadius:20,padding:"8px 16px",color:CORES.marsala,fontWeight:700,cursor:"pointer"}}>Enviar</button>
         </div>
+      </Card>}
+    </div>
+      {aba===9&&<Card>
+        <div style={{fontSize:14,fontWeight:700,color:CORES.dourado,marginBottom:16}}>👤 Meu Perfil</div>
+        <div style={{fontSize:13,color:CORES.textoSuave,marginBottom:4}}>Nome: <strong style={{color:CORES.texto}}>{d.nome}</strong></div>
+        <div style={{fontSize:13,color:CORES.textoSuave,marginBottom:20}}>E-mail: <strong style={{color:CORES.texto}}>{d.email}</strong></div>
+        <div style={{fontSize:14,fontWeight:700,color:CORES.dourado,marginBottom:12}}>🔒 Alterar Senha</div>
+        <Inp label="Senha atual" value={senhaAtual} onChange={setSenhaAtual} type="password" placeholder="••••••••"/>
+        <Inp label="Nova senha" value={senhaNova} onChange={setSenhaNova} type="password" placeholder="Mínimo 6 caracteres"/>
+        <Inp label="Confirmar nova senha" value={senhaConf} onChange={setSenhaConf} type="password" placeholder="Repita a nova senha"/>
+        {erroSenha&&<div style={{color:CORES.vermelho,fontSize:12,marginBottom:10}}>{erroSenha}</div>}
+        {msgSenha&&<div style={{color:CORES.verde,fontSize:12,marginBottom:10}}>{msgSenha}</div>}
+        <Btn onClick={trocarSenha}>Alterar Senha</Btn>
       </Card>}
     </div>
     <div style={{textAlign:"center",padding:14,fontSize:11,color:CORES.textoSuave,borderTop:`1px solid ${CORES.marsalaClaro}33`}}>Conduta Rica® · Wélica Amaro — CRP 09/12387</div>
