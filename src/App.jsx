@@ -3,39 +3,16 @@ import { useState, useEffect, useRef } from "react";
 const SUPABASE_URL = "https://qxvtzxttjmzurfwkxfhu.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dnR6eHR0am16dXJmd2t4Zmh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NDcxOTQsImV4cCI6MjA5OTEyMzE5NH0.Gwz13_5ZtXqoRyvMq6WBybXUfQbXkHgchzR-f74cAiE";
 
-async function sbGet(tabela, filtro="") {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}${filtro}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-  });
-  return r.json();
-}
-async function sbPost(tabela, body) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, {
-    method: "POST",
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
-    body: JSON.stringify(body)
-  });
-  return r.json();
-}
-async function sbPatch(tabela, id, body) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?id=eq.${id}`, {
-    method: "PATCH",
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
-    body: JSON.stringify(body)
-  });
-  return r.json();
-}
+async function sbGet(tabela,filtro=""){const r=await fetch(`${SUPABASE_URL}/rest/v1/${tabela}${filtro}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});return r.json();}
+async function sbPost(tabela,body){const r=await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`,{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(body)});return r.json();}
+async function sbPatch(tabela,id,body){const r=await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?id=eq.${id}`,{method:"PATCH",headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(body)});return r.json();}
 
-const CORES = {
-  marsala:"#4A1020", marsalaClaro:"#6B1A30", dourado:"#B8860B", douradoClaro:"#8B6508",
-  fundo:"#F5EFE6", card:"#FFFFFF", cardClaro:"#EDE4D8", texto:"#1A0A0E",
-  textoSuave:"#5C3D2E", verde:"#1B6B3A", vermelho:"#A52020", azul:"#1A4F7A",
-};
+const CORES={marsala:"#4A1020",marsalaClaro:"#6B1A30",dourado:"#B8860B",douradoClaro:"#8B6508",fundo:"#F5EFE6",card:"#FFFFFF",cardClaro:"#EDE4D8",texto:"#1A0A0E",textoSuave:"#5C3D2E",verde:"#1B6B3A",vermelho:"#A52020",azul:"#1A4F7A"};
 
-const EMOCOES_POSITIVAS = ["Gratidão","Confiança","Motivação","Leveza","Orgulho","Alegria","Serenidade","Esperança","Satisfação","Empoderamento"];
-const EMOCOES_NEGATIVAS = ["Medo","Culpa","Ansiedade","Impulsividade","Vergonha","Raiva","Tristeza","Desânimo","Inveja","Insegurança"];
+const EMOCOES_POSITIVAS=["Gratidão","Confiança","Motivação","Leveza","Orgulho","Alegria","Serenidade","Esperança","Satisfação","Empoderamento"];
+const EMOCOES_NEGATIVAS=["Medo","Culpa","Ansiedade","Impulsividade","Vergonha","Raiva","Tristeza","Desânimo","Inveja","Insegurança"];
 
-const CRENCAS_BASE = [
+const CRENCAS_BASE=[
   {id:1,crenca:"Dinheiro é difícil de ganhar",categoria:"Escassez",ressig:"Dinheiro é o resultado natural do valor que entrego."},
   {id:2,crenca:"Eu não mereço ser rico(a)",categoria:"Merecimento",ressig:"Eu sou digno(a) de abundância. Minha história não define meu destino financeiro."},
   {id:3,crenca:"Dinheiro não é para pessoas como eu",categoria:"Escassez",ressig:"Dinheiro está disponível para qualquer pessoa disposta a aprender e agir."},
@@ -57,34 +34,112 @@ const CRENCAS_BASE = [
   {id:19,crenca:"Segurança financeira é impossível",categoria:"Medo",ressig:"Segurança financeira é construída passo a passo."},
 ];
 
-const CAT_OPTS=[{v:"salario",l:"Salário"},{v:"freelance",l:"Freelance"},{v:"bonus",l:"Bônus"},{v:"presente",l:"Presente"},{v:"aluguel_rec",l:"Aluguel recebido"},{v:"alimentacao",l:"Alimentação"},{v:"moradia",l:"Moradia"},{v:"saude",l:"Saúde"},{v:"educacao",l:"Educação"},{v:"lazer",l:"Lazer"},{v:"transporte",l:"Transporte"},{v:"vestuario",l:"Vestuário"},{v:"divida",l:"Dívida"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"},{v:"outro",l:"Outro (especificar)"}];
+const CAT_PADRAO=[{v:"salario",l:"Salário"},{v:"freelance",l:"Freelance"},{v:"bonus",l:"Bônus"},{v:"presente",l:"Presente"},{v:"aluguel_rec",l:"Aluguel recebido"},{v:"alimentacao",l:"Alimentação"},{v:"moradia",l:"Moradia"},{v:"saude",l:"Saúde"},{v:"educacao",l:"Educação"},{v:"lazer",l:"Lazer"},{v:"transporte",l:"Transporte"},{v:"vestuario",l:"Vestuário"},{v:"divida",l:"Dívida"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"}];
+const CAT_AGENDA_PADRAO=[{v:"conta",l:"Conta fixa"},{v:"servico",l:"Serviço"},{v:"cliente",l:"Pagamento de cliente"},{v:"freelance",l:"Freelance"},{v:"aluguel",l:"Aluguel"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"}];
 
-const fmt = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-const hoje = () => new Date().toLocaleDateString("pt-BR");
-const agora = () => new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-const strParaData = s => new Date(s+"T12:00:00");
-function statusConta(v){ if(!v)return"pendente"; const h=new Date();h.setHours(0,0,0,0);const d=strParaData(v);d.setHours(0,0,0,0);return d<h?"vencida":"pendente"; }
+const fmt=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+const hoje=()=>new Date().toLocaleDateString("pt-BR");
+const agora=()=>new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+const strParaData=s=>new Date(s+"T12:00:00");
+function statusConta(v){if(!v)return"pendente";const h=new Date();h.setHours(0,0,0,0);const d=strParaData(v);d.setHours(0,0,0,0);return d<h?"vencida":"pendente";}
 
 function Card({children,style={}}){return <div style={{background:CORES.card,borderRadius:14,padding:16,marginBottom:14,border:`1px solid ${CORES.marsalaClaro}33`,...style}}>{children}</div>;}
 function Inp({label,value,onChange,type="text",placeholder=""}){return(<div style={{marginBottom:12}}>{label&&<label style={{display:"block",fontSize:12,color:CORES.dourado,marginBottom:4,fontWeight:600}}>{label}</label>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",background:CORES.cardClaro,border:`1px solid ${CORES.marsalaClaro}55`,borderRadius:8,padding:"8px 12px",color:CORES.texto,fontSize:14,boxSizing:"border-box",outline:"none"}}/></div>);}
 function Sel({label,value,onChange,options}){return(<div style={{marginBottom:12}}>{label&&<label style={{display:"block",fontSize:12,color:CORES.dourado,marginBottom:4,fontWeight:600}}>{label}</label>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",background:CORES.cardClaro,border:`1px solid ${CORES.marsalaClaro}55`,borderRadius:8,padding:"8px 12px",color:CORES.texto,fontSize:14,boxSizing:"border-box",outline:"none"}}>{options.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}</select></div>);}
-function Btn({onClick,children,cor=CORES.dourado,outline=false,full=false,sm=false,style={}}){return(<button onClick={onClick} style={{background:outline?"transparent":cor,color:outline?cor:"#fff",border:`2px solid ${cor}`,borderRadius:8,padding:sm?"4px 10px":"8px 18px",fontWeight:700,fontSize:sm?11:13,cursor:"pointer",width:full?"100%":"auto",...style}}>{children}</button>);}
+function Btn({onClick,children,cor=CORES.marsala,outline=false,full=false,sm=false,style={}}){return(<button onClick={onClick} style={{background:outline?"transparent":cor,color:outline?cor:"#fff",border:`2px solid ${cor}`,borderRadius:8,padding:sm?"4px 10px":"8px 18px",fontWeight:700,fontSize:sm?11:13,cursor:"pointer",width:full?"100%":"auto",...style}}>{children}</button>);}
 function Badge({cor,children}){return <span style={{background:cor+"22",color:cor,border:`1px solid ${cor}44`,borderRadius:20,padding:"2px 10px",fontSize:12,fontWeight:600}}>{children}</span>;}
 function Barra({atual,meta}){const pct=Math.min(100,Math.round((atual/meta)*100));return(<div style={{marginTop:6}}><div style={{background:CORES.cardClaro,borderRadius:20,height:10,overflow:"hidden"}}><div style={{width:`${pct}%`,background:`linear-gradient(90deg,${CORES.marsala},${CORES.dourado})`,height:"100%",borderRadius:20}}/></div><div style={{fontSize:11,color:CORES.textoSuave,marginTop:3}}>{pct}% concluído</div></div>);}
 function Loader(){return <div style={{color:CORES.marsala,textAlign:"center",padding:40,fontFamily:"'Segoe UI',sans-serif",background:CORES.fundo,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>Carregando Conduta Rica®...</div>;}
 function ModalExcluir({onConfirm,onCancel}){return(<div style={{position:"fixed",inset:0,background:"#000a",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{background:CORES.card,borderRadius:14,padding:24,maxWidth:320,width:"90%",border:`2px solid ${CORES.vermelho}`}}><div style={{fontSize:15,fontWeight:700,color:CORES.vermelho,marginBottom:8}}>Excluir registro?</div><div style={{fontSize:13,color:CORES.textoSuave,marginBottom:20}}>Esta ação não pode ser desfeita.</div><div style={{display:"flex",gap:10}}><Btn onClick={onConfirm} cor={CORES.vermelho} full>Excluir</Btn><Btn onClick={onCancel} cor={CORES.marsala} outline full>Cancelar</Btn></div></div></div>);}
 
+// Exportação CSV
+function exportarCSV(dados, nome) {
+  const linhas = [["Tipo","Descrição","Valor","Categoria","Emoção","Data"]];
+  (dados.movs||[]).forEach(m=>linhas.push([m.tipo,m.descricao,m.valor,m.categoria,m.emocao||"",m.data]));
+  const csv = linhas.map(l=>l.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download=`conduta-rica-${nome}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Exportação PDF via print
+function exportarPDF(dados, modulos) {
+  const fmt2=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+  const movs=dados.movs||[]; const emocoes=dados.emocoes||[]; const crencas=dados.crencas||[]; const metas=dados.metas||[]; const rendimentos=dados.rendimentos||[];
+  const entradas=movs.filter(m=>m.tipo==="entrada").reduce((a,m)=>a+m.valor,0)+rendimentos.reduce((a,r)=>a+r.valor,0);
+  const saidas=movs.filter(m=>m.tipo==="saida").reduce((a,m)=>a+m.valor,0);
+  const inv=movs.filter(m=>m.tipo==="investimento").reduce((a,m)=>a+m.valor,0);
+  const saldo=entradas-saidas-inv;
+  const emocoesMovs=movs.filter(m=>m.emocao).map(m=>({nome:m.emocao,tipo:EMOCOES_POSITIVAS.includes(m.emocao)?"positiva":"negativa"}));
+  const todasEmo=[...emocoes,...emocoesMovs];
+
+  let html=`<html><head><meta charset="UTF-8"><style>
+    body{font-family:Arial,sans-serif;margin:30px;color:#1A0A0E;}
+    h1{color:#4A1020;border-bottom:2px solid #B8860B;padding-bottom:8px;}
+    h2{color:#4A1020;margin-top:24px;font-size:15px;}
+    table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;}
+    th{background:#4A1020;color:#fff;padding:6px 8px;text-align:left;}
+    td{padding:5px 8px;border-bottom:1px solid #EDE4D8;}
+    .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;}
+    .pos{background:#d4edda;color:#1B6B3A;} .neg{background:#f8d7da;color:#A52020;}
+    .resumo{display:flex;gap:20px;flex-wrap:wrap;margin-top:8px;}
+    .resumo-item{background:#F5EFE6;border-radius:8px;padding:10px 16px;min-width:120px;}
+    .resumo-label{font-size:11px;color:#5C3D2E;} .resumo-valor{font-size:16px;font-weight:bold;}
+  </style></head><body>`;
+  html+=`<h1>CONDUTA RICA® — Relatório</h1>`;
+  html+=`<p><strong>Cliente:</strong> ${dados.nome} &nbsp;|&nbsp; <strong>Data:</strong> ${new Date().toLocaleDateString("pt-BR",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</p>`;
+
+  if(modulos.financeiro){
+    html+=`<h2>💰 Resumo Financeiro</h2><div class="resumo">
+      <div class="resumo-item"><div class="resumo-label">Entradas</div><div class="resumo-valor" style="color:#1B6B3A">${fmt2(entradas)}</div></div>
+      <div class="resumo-item"><div class="resumo-label">Saídas</div><div class="resumo-valor" style="color:#A52020">${fmt2(saidas)}</div></div>
+      <div class="resumo-item"><div class="resumo-label">Investido</div><div class="resumo-valor" style="color:#1A4F7A">${fmt2(inv)}</div></div>
+      <div class="resumo-item"><div class="resumo-label">Saldo Líquido</div><div class="resumo-valor" style="color:${saldo>=0?"#1B6B3A":"#A52020"}">${fmt2(saldo)}</div></div>
+    </div>`;
+    if(movs.length>0){
+      html+=`<table><tr><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Categoria</th><th>Emoção</th><th>Data</th></tr>`;
+      movs.forEach(m=>{html+=`<tr><td>${m.tipo}</td><td>${m.descricao}</td><td style="color:${m.tipo==="entrada"?"#1B6B3A":"#A52020"}">${m.tipo==="saida"?"-":""}${fmt2(m.valor)}</td><td>${m.categoria}</td><td>${m.emocao||"-"}</td><td>${m.data}</td></tr>`;});
+      html+=`</table>`;
+    }
+  }
+
+  if(modulos.emocional&&todasEmo.length>0){
+    html+=`<h2>😊 Mapa Emocional</h2>`;
+    const freq={};todasEmo.forEach(e=>{freq[e.nome]=(freq[e.nome]||0)+1;});
+    html+=Object.entries(freq).map(([n,q])=>`<span class="badge ${EMOCOES_POSITIVAS.includes(n)?"pos":"neg"}">${n} (${q})</span> `).join("");
+    html+=`<p style="margin-top:8px;font-size:12px;color:#5C3D2E">Positivas: ${todasEmo.filter(e=>EMOCOES_POSITIVAS.includes(e.nome)).length} · Negativas: ${todasEmo.filter(e=>EMOCOES_NEGATIVAS.includes(e.nome)).length}</p>`;
+  }
+
+  if(modulos.crencas&&crencas.length>0){
+    html+=`<h2>🧠 Crenças Mapeadas</h2><table><tr><th>Crença</th><th>Status</th><th>Nota da Mentora</th></tr>`;
+    crencas.forEach(c=>{html+=`<tr><td>${c.crenca}</td><td><span class="badge ${c.status==="ressignificada"?"pos":"neg"}">${c.status==="ressignificada"?"Ressignificada":"Ativa"}</span></td><td>${c.notaMentora||"-"}</td></tr>`;});
+    html+=`</table>`;
+  }
+
+  if(modulos.metas&&metas.length>0){
+    html+=`<h2>🎯 Metas</h2><table><tr><th>Meta</th><th>Tipo</th><th>Progresso</th><th>Prazo</th></tr>`;
+    metas.forEach(m=>{const pct=Math.min(100,Math.round((m.atual/m.meta)*100));html+=`<tr><td>${m.titulo}</td><td>${m.tipo}</td><td>${pct}% (${fmt2(m.atual)} de ${fmt2(m.meta)})</td><td>${m.prazo||"-"}</td></tr>`;});
+    html+=`</table>`;
+  }
+
+  html+=`<p style="margin-top:40px;font-size:10px;color:#888;border-top:1px solid #EDE4D8;padding-top:8px">Conduta Rica® · Wélica Amaro — CRP 09/12387 · Psicologia &amp; Comportamento Financeiro</p>`;
+  html+=`</body></html>`;
+
+  const janela=window.open("","_blank");
+  janela.document.write(html);
+  janela.document.close();
+  setTimeout(()=>janela.print(),500);
+}
+
 function Login({onLogin}){
   const [email,setEmail]=useState(""); const [senha,setSenha]=useState(""); const [erro,setErro]=useState(""); const [loading,setLoading]=useState(false);
   async function entrar(){
-    setLoading(true); setErro("");
-    const e=email.trim(); const s=senha.trim();
+    setLoading(true);setErro("");
+    const e=email.trim();const s=senha.trim();
     if(e==="welica@conducarica.com"&&s==="condutarica2024"){onLogin({tipo:"mentora"});setLoading(false);return;}
-    try{
-      const res=await sbGet("clientes",`?email=eq.${encodeURIComponent(e)}&select=*`);
-      if(res&&res.length>0&&res[0].senha===s){onLogin({tipo:"cliente",dados:res[0]});setLoading(false);return;}
-    }catch(_){}
-    setErro("E-mail ou senha incorretos."); setLoading(false);
+    try{const res=await sbGet("clientes",`?email=eq.${encodeURIComponent(e)}&select=*`);if(res&&res.length>0&&res[0].senha===s){onLogin({tipo:"cliente",dados:res[0]});setLoading(false);return;}}catch(_){}
+    setErro("E-mail ou senha incorretos.");setLoading(false);
   }
   return(<div style={{minHeight:"100vh",background:CORES.fundo,display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"'Segoe UI',sans-serif"}}>
     <div style={{width:"100%",maxWidth:380}}>
@@ -104,16 +159,38 @@ function Login({onLogin}){
 function PainelMentora({onLogout}){
   const [clientes,setClientes]=useState([]); const [aba,setAba]=useState("lista"); const [clienteAberto,setClienteAberto]=useState(null);
   const [nome,setNome]=useState(""); const [email,setEmail]=useState(""); const [senha,setSenha]=useState(""); const [ok,setOk]=useState(""); const [loading,setLoading]=useState(true);
+  const [editandoCli,setEditandoCli]=useState(null); const [editNome,setEditNome]=useState(""); const [editEmail,setEditEmail]=useState(""); const [editSenha,setEditSenha]=useState(""); const [okEdit,setOkEdit]=useState("");
+
   useEffect(()=>{recarregar();},[]);
   async function recarregar(){setLoading(true);const r=await sbGet("clientes","?select=*&order=created_at.asc");setClientes(Array.isArray(r)?r:[]);setLoading(false);}
   async function cadastrar(){
     if(!nome||!email||!senha)return;
-    const novo={id:"cli_"+Date.now(),nome,email,senha,movs:[],emocoes:[],crencas:[],metas:[],contas:[],rendimentos:[],msgs:[{id:1,de:"mentora",texto:`Olá, ${nome}! Bem-vindo(a) à Conduta Rica®!`,hora:"09:00"}]};
-    await sbPost("clientes",novo); setNome("");setEmail("");setSenha("");setOk("Cliente cadastrado!");setTimeout(()=>setOk(""),3000); recarregar();
+    const novo={id:"cli_"+Date.now(),nome,email,senha,movs:[],emocoes:[],crencas:[],metas:[],contas:[],rendimentos:[],msgs:[{id:1,de:"mentora",texto:`Olá, ${nome}! Bem-vindo(a) à Conduta Rica®!`,hora:"09:00"}],categorias_custom:[],cats_agenda_custom:[]};
+    await sbPost("clientes",novo);setNome("");setEmail("");setSenha("");setOk("Cliente cadastrado!");setTimeout(()=>setOk(""),3000);recarregar();
+  }
+  function abrirEdicao(c){setEditandoCli(c);setEditNome(c.nome);setEditEmail(c.email);setEditSenha(c.senha);setOkEdit("");}
+  async function salvarEdicaoCli(){
+    if(!editNome||!editEmail||!editSenha)return;
+    await sbPatch("clientes",editandoCli.id,{nome:editNome,email:editEmail,senha:editSenha});
+    setOkEdit("Salvo!"); setTimeout(()=>{setOkEdit("");setEditandoCli(null);recarregar();},1500);
   }
   async function atualizarCliente(cli){await sbPatch("clientes",cli.id,cli);setClienteAberto(cli);setClientes(clientes.map(c=>c.id===cli.id?cli:c));}
   if(clienteAberto)return <PainelDados dados={clienteAberto} isMentora={true} onSalvar={atualizarCliente} onVoltar={()=>{recarregar();setClienteAberto(null);}} onLogout={onLogout}/>;
+
   return(<div style={{fontFamily:"'Segoe UI',sans-serif",background:CORES.fundo,minHeight:"100vh",color:CORES.texto}}>
+    {editandoCli&&<div style={{position:"fixed",inset:0,background:"#000a",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{background:CORES.card,borderRadius:14,padding:24,maxWidth:380,width:"90%",border:`2px solid ${CORES.marsala}`}}>
+        <div style={{fontSize:15,fontWeight:700,color:CORES.marsala,marginBottom:14}}>✏ Editar Cliente</div>
+        <Inp label="Nome" value={editNome} onChange={setEditNome}/>
+        <Inp label="E-mail" value={editEmail} onChange={setEditEmail}/>
+        <Inp label="Senha" value={editSenha} onChange={setEditSenha} type="password"/>
+        {okEdit&&<div style={{color:CORES.verde,fontSize:12,marginBottom:8}}>{okEdit}</div>}
+        <div style={{display:"flex",gap:10,marginTop:8}}>
+          <Btn onClick={salvarEdicaoCli} full>Salvar</Btn>
+          <Btn onClick={()=>setEditandoCli(null)} outline full>Cancelar</Btn>
+        </div>
+      </div>
+    </div>}
     <div style={{background:`linear-gradient(135deg,${CORES.marsala},${CORES.marsalaClaro})`,padding:"14px 20px",borderBottom:`2px solid ${CORES.dourado}44`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <div><div style={{fontSize:16,fontWeight:800,color:CORES.dourado}}>CONDUTA RICA®</div><div style={{fontSize:11,color:"#f5ede8"}}>Painel da Mentora</div></div>
       <div><div style={{fontSize:12,color:"#f5ede8",fontWeight:600}}>Wélica Amaro</div><button onClick={onLogout} style={{background:"transparent",border:"none",color:"#f5ede8",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>Sair</button></div>
@@ -133,7 +210,14 @@ function PainelMentora({onLogout}){
             <div><div style={{fontWeight:700,fontSize:14,color:CORES.texto}}>{c.nome}</div><div style={{fontSize:11,color:CORES.textoSuave,marginBottom:6}}>{c.email}</div>
               <div style={{display:"flex",gap:6,flexWrap:"wrap"}}><Badge cor={CORES.verde}>{(c.movs||[]).filter(m=>m.tipo==="entrada").length} entradas</Badge><Badge cor={CORES.azul}>{(c.metas||[]).length} metas</Badge>{vencidas>0&&<Badge cor={CORES.vermelho}>{vencidas} vencida(s)</Badge>}</div>
             </div>
-            <div style={{textAlign:"right"}}><div style={{fontSize:11,color:CORES.textoSuave}}>Saldo</div><div style={{fontWeight:700,color:saldo>=0?CORES.verde:CORES.vermelho,fontSize:13,marginBottom:8}}>{fmt(saldo)}</div><Btn onClick={()=>setClienteAberto(c)} cor={CORES.marsala}>Abrir</Btn></div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:11,color:CORES.textoSuave}}>Saldo</div>
+              <div style={{fontWeight:700,color:saldo>=0?CORES.verde:CORES.vermelho,fontSize:13,marginBottom:8}}>{fmt(saldo)}</div>
+              <div style={{display:"flex",gap:6"}}>
+                <Btn onClick={()=>setClienteAberto(c)} sm>Abrir</Btn>
+                <Btn onClick={()=>abrirEdicao(c)} sm outline>✏ Editar</Btn>
+              </div>
+            </div>
           </div></Card>);
         })}
       </div>}
@@ -143,7 +227,7 @@ function PainelMentora({onLogout}){
         <Inp label="E-mail de acesso" value={email} onChange={setEmail} placeholder="email@exemplo.com"/>
         <Inp label="Senha" value={senha} onChange={setSenha} type="password" placeholder="Crie uma senha"/>
         {ok&&<div style={{color:CORES.verde,fontSize:12,marginBottom:10}}>{ok}</div>}
-        <Btn onClick={cadastrar} cor={CORES.marsala}>Cadastrar</Btn>
+        <Btn onClick={cadastrar}>Cadastrar</Btn>
       </Card>}
     </div>
   </div>);
@@ -158,12 +242,25 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
   const [confirmarExcluir,setConfirmarExcluir]=useState(null);
   const [editando,setEditando]=useState(null);
   const [valEdit,setValEdit]=useState({});
+  const [modalExportar,setModalExportar]=useState(false);
+  const [modulosExport,setModulosExport]=useState({financeiro:true,emocional:true,crencas:true,metas:true});
+
   useEffect(()=>{if(editando)setValEdit({...editando.item});},[editando]);
   useEffect(()=>{msgFim.current?.scrollIntoView({behavior:"smooth"});},[d.msgs]);
 
   async function upd(campo,valor){const novo={...d,[campo]:valor};setD(novo);setSalvando(true);await sbPatch("clientes",d.id,{[campo]:valor});setSalvando(false);onSalvar(novo);}
   function excluir(lista,id){upd(lista,(d[lista]||[]).filter(x=>x.id!==id));setConfirmarExcluir(null);}
   function salvarEdicao(lista,item){upd(lista,(d[lista]||[]).map(x=>x.id===item.id?item:x));setEditando(null);}
+
+  // Categorias customizadas
+  const catsCustom=d.categorias_custom||[];
+  const catsAgendaCustom=d.cats_agenda_custom||[];
+
+  function buildCatOpts(){return [...catsCustom.map(c=>({v:c,l:c})),...CAT_PADRAO,{v:"outro",l:"Outro (especificar)"}];}
+  function buildCatAgendaOpts(){return [...catsAgendaCustom.map(c=>({v:c,l:c})),...CAT_AGENDA_PADRAO,{v:"outro",l:"Outro (especificar)"}];}
+
+  function salvarCatCustom(nova){if(!nova||catsCustom.includes(nova)||CAT_PADRAO.find(c=>c.v===nova))return;upd("categorias_custom",[nova,...catsCustom]);}
+  function salvarCatAgendaCustom(nova){if(!nova||catsAgendaCustom.includes(nova)||CAT_AGENDA_PADRAO.find(c=>c.v===nova))return;upd("cats_agenda_custom",[nova,...catsAgendaCustom]);}
 
   const movs=d.movs||[]; const emocoes=d.emocoes||[]; const crencas=d.crencas||[];
   const metas=d.metas||[]; const contas=d.contas||[]; const rendimentos=d.rendimentos||[];
@@ -173,62 +270,70 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
   const inv=movs.filter(m=>m.tipo==="investimento").reduce((a,m)=>a+m.valor,0);
   const saldo=entradas+totalRend-saidas-inv;
   const contasVencidas=contas.filter(c=>c.status!=="executada"&&statusConta(c.vencimento)==="vencida").length;
+  const emocoesMovs=movs.filter(m=>m.emocao).map(m=>({nome:m.emocao,tipo:EMOCOES_POSITIVAS.includes(m.emocao)?"positiva":"negativa"}));
+  const todasEmo=[...emocoes,...emocoesMovs];
 
+  // Financeiro
   const [mTipo,setMTipo]=useState("entrada"); const [mDesc,setMDesc]=useState(""); const [mVal,setMVal]=useState(""); const [mCat,setMCat]=useState("salario"); const [mCatOutro,setMCatOutro]=useState(""); const [mEmo,setMEmo]=useState(""); const [mData,setMData]=useState("");
   function addMov(){
     if(!mDesc||!mVal)return;
     const catFinal=mCat==="outro"&&mCatOutro.trim()?mCatOutro.trim():mCat;
+    if(mCat==="outro"&&mCatOutro.trim()) salvarCatCustom(mCatOutro.trim());
     const dataFmt=mData?strParaData(mData).toLocaleDateString("pt-BR"):hoje();
-    const novasMov=[...movs,{
-      id:Date.now(),
-      tipo:mTipo,
-      descricao:mDesc,
-      valor:parseFloat(mVal.replace(",",".")),
-      categoria:catFinal,
-      emocao:mEmo||"",
-      data:dataFmt
-    }];
-    upd("movs", novasMov);
+    upd("movs",[...movs,{id:Date.now(),tipo:mTipo,descricao:mDesc,valor:parseFloat(mVal.replace(",",".")),categoria:catFinal,emocao:mEmo||"",data:dataFmt}]);
     setMDesc("");setMVal("");setMEmo("");setMData("");setMCatOutro("");
   }
 
-  const [cTipo,setCTipo]=useState("pagar"); const [cDesc,setCDesc]=useState(""); const [cVal,setCVal]=useState(""); const [cVenc,setCVenc]=useState(""); const [cCat,setCCat]=useState("conta");
-  function addConta(){if(!cDesc||!cVal||!cVenc)return;upd("contas",[...contas,{id:Date.now(),tipo:cTipo,descricao:cDesc,valor:parseFloat(cVal.replace(",",".")),vencimento:strParaData(cVenc).toLocaleDateString("pt-BR"),categoria:cCat,status:"pendente"}]);setCDesc("");setCVal("");setCVenc("");}
+  // Agendamentos
+  const [cTipo,setCTipo]=useState("pagar"); const [cDesc,setCDesc]=useState(""); const [cVal,setCVal]=useState(""); const [cVenc,setCVenc]=useState(""); const [cCat,setCCat]=useState("conta"); const [cCatOutro,setCCatOutro]=useState("");
+  function addConta(){
+    if(!cDesc||!cVal||!cVenc)return;
+    const catFinal=cCat==="outro"&&cCatOutro.trim()?cCatOutro.trim():cCat;
+    if(cCat==="outro"&&cCatOutro.trim()) salvarCatAgendaCustom(cCatOutro.trim());
+    upd("contas",[...contas,{id:Date.now(),tipo:cTipo,descricao:cDesc,valor:parseFloat(cVal.replace(",",".")),vencimento:strParaData(cVenc).toLocaleDateString("pt-BR"),categoria:catFinal,status:"pendente"}]);
+    setCDesc("");setCVal("");setCVenc("");setCCatOutro("");
+  }
   async function executarConta(id){const c=contas.find(x=>x.id===id);if(!c)return;const novasMov=[...movs,{id:Date.now(),tipo:c.tipo==="pagar"?"saida":"entrada",descricao:c.descricao+" (agendamento)",valor:c.valor,categoria:c.categoria,emocao:"",data:hoje()}];const novasContas=contas.map(x=>x.id===id?{...x,status:"executada",dataExec:hoje()}:x);const novo={...d,movs:novasMov,contas:novasContas};setD(novo);await sbPatch("clientes",d.id,{movs:novasMov,contas:novasContas});onSalvar(novo);}
 
+  // Rendimentos
   const [rDesc,setRDesc]=useState(""); const [rVal,setRVal]=useState(""); const [rTipo,setRTipo]=useState("dividendos"); const [rData,setRData]=useState("");
   function addRend(){if(!rDesc||!rVal)return;upd("rendimentos",[...rendimentos,{id:Date.now(),descricao:rDesc,valor:parseFloat(rVal.replace(",",".")),tipo:rTipo,data:rData?strParaData(rData).toLocaleDateString("pt-BR"):hoje()}]);setRDesc("");setRVal("");setRData("");}
 
+  // Investimentos
   const [iDesc,setIDesc]=useState(""); const [iVal,setIVal]=useState(""); const [iTipo,setITipo]=useState("renda_fixa"); const [iData,setIData]=useState("");
   function addInv(){if(!iDesc||!iVal)return;upd("movs",[...movs,{id:Date.now(),tipo:"investimento",descricao:iDesc,valor:parseFloat(iVal.replace(",",".")),categoria:iTipo,emocao:"",data:iData?strParaData(iData).toLocaleDateString("pt-BR"):hoje()}]);setIDesc("");setIVal("");setIData("");}
 
+  // Emocional
   const [eTipo,setETipo]=useState("positiva"); const [eNome,setENome]=useState(""); const [eCont,setECont]=useState(""); const [eInt,setEInt]=useState("3"); const [eData,setEData]=useState("");
   function addEmo(){if(!eNome)return;upd("emocoes",[...emocoes,{id:Date.now(),tipo:eTipo,nome:eNome,contexto:eCont,intensidade:parseInt(eInt),data:eData?strParaData(eData).toLocaleDateString("pt-BR"):hoje()}]);setENome("");setECont("");setEInt("3");setEData("");}
 
+  // Crenças
   const [cSel,setCSel]=useState(""); const [cPers,setCPers]=useState(""); const [rPers,setRPers]=useState("");
   function addCrencaPre(){if(!cSel)return;const c=CRENCAS_BASE.find(x=>x.id===parseInt(cSel));if(!c||crencas.find(x=>x.crencaId===c.id))return;upd("crencas",[...crencas,{id:Date.now(),crencaId:c.id,crenca:c.crenca,ressig:c.ressig,personalizada:false,notaMentora:"",status:"ativa"}]);setCSel("");}
   function addCrencaPers(){if(!cPers)return;upd("crencas",[...crencas,{id:Date.now(),crencaId:null,crenca:cPers,ressig:rPers,personalizada:true,notaMentora:"",status:"ativa"}]);setCPers("");setRPers("");}
   function toggleCrencaStatus(id){upd("crencas",crencas.map(c=>c.id===id?{...c,status:c.status==="ativa"?"ressignificada":"ativa"}:c));}
   function notaMentora(id,nota){upd("crencas",crencas.map(c=>c.id===id?{...c,notaMentora:nota}:c));}
 
+  // Metas
   const [metaTit,setMetaTit]=useState(""); const [metaVal,setMetaVal]=useState(""); const [metaAt,setMetaAt]=useState(""); const [metaTipo,setMetaTipo]=useState("financeira"); const [metaPrazo,setMetaPrazo]=useState("");
   function addMeta(){if(!metaTit)return;upd("metas",[...metas,{id:Date.now(),titulo:metaTit,tipo:metaTipo,meta:parseFloat(metaVal||100),atual:parseFloat(metaAt||0),prazo:metaPrazo}]);setMetaTit("");setMetaVal("");setMetaAt("");setMetaPrazo("");}
   function updMeta(id,campo,val){upd("metas",metas.map(m=>m.id===id?{...m,[campo]:["atual","meta"].includes(campo)?parseFloat(val||0):val}:m));}
 
+  // Mensagens
   const [msg,setMsg]=useState("");
   function enviar(){if(!msg.trim())return;upd("msgs",[...(d.msgs||[]),{id:Date.now(),de:isMentora?"mentora":"cliente",texto:msg,hora:agora()}]);setMsg("");}
 
+  // Perfil / senha
   const [senhaAtual,setSenhaAtual]=useState(""); const [senhaNova,setSenhaNova]=useState(""); const [senhaConf,setSenhaConf]=useState(""); const [msgSenha,setMsgSenha]=useState(""); const [erroSenha,setErroSenha]=useState("");
   async function trocarSenha(){
-    setMsgSenha(""); setErroSenha("");
+    setMsgSenha("");setErroSenha("");
     if(!senhaAtual||!senhaNova||!senhaConf){setErroSenha("Preencha todos os campos.");return;}
     if(senhaAtual!==d.senha){setErroSenha("Senha atual incorreta.");return;}
     if(senhaNova.length<6){setErroSenha("A nova senha deve ter no mínimo 6 caracteres.");return;}
     if(senhaNova!==senhaConf){setErroSenha("As senhas não coincidem.");return;}
     await upd("senha",senhaNova);
-    setSenhaAtual(""); setSenhaNova(""); setSenhaConf("");
-    setMsgSenha("Senha alterada com sucesso!");
-    setTimeout(()=>setMsgSenha(""),4000);
+    setSenhaAtual("");setSenhaNova("");setSenhaConf("");
+    setMsgSenha("Senha alterada com sucesso!");setTimeout(()=>setMsgSenha(""),4000);
   }
 
   function ModalEdicao(){
@@ -241,7 +346,8 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           {val.tipo!=="investimento"&&<div style={{display:"flex",gap:6,marginBottom:12}}>{["entrada","saida"].map(t=>(<button key={t} onClick={()=>setVal({...val,tipo:t})} style={{flex:1,padding:"6px",borderRadius:8,fontSize:11,fontWeight:700,cursor:"pointer",background:val.tipo===t?(t==="entrada"?CORES.verde:CORES.vermelho):"transparent",color:val.tipo===t?"#fff":(t==="entrada"?CORES.verde:CORES.vermelho),border:`2px solid ${t==="entrada"?CORES.verde:CORES.vermelho}`}}>{t==="entrada"?"Entrada":"Saída"}</button>))}</div>}
           <Inp label="Descrição" value={val.descricao||""} onChange={v=>setVal({...val,descricao:v})}/>
           <Inp label="Valor (R$)" value={String(val.valor||"")} onChange={v=>setVal({...val,valor:parseFloat(v.replace(",","."))||0})}/>
-          <Sel label="Categoria" value={CAT_OPTS.find(o=>o.v===val.categoria)?val.categoria:"outro"} onChange={v=>setVal({...val,categoria:v})} options={CAT_OPTS}/>
+          <Sel label="Categoria" value={buildCatOpts().find(o=>o.v===val.categoria)?val.categoria:"outro"} onChange={v=>setVal({...val,categoria:v})} options={buildCatOpts()}/>
+          <Sel label="Emoção" value={val.emocao||""} onChange={v=>setVal({...val,emocao:v})} options={[{v:"",l:"— Nenhuma —"},...EMOCOES_POSITIVAS.map(e=>({v:e,l:"😊 "+e})),...EMOCOES_NEGATIVAS.map(e=>({v:e,l:"😟 "+e}))]}/>
           <Inp label="Data" value={val.data||""} onChange={v=>setVal({...val,data:v})} placeholder="dd/mm/aaaa"/>
         </div>}
         {lista==="emocoes"&&<div>
@@ -273,7 +379,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <Inp label="Valor (R$)" value={String(val.valor||"")} onChange={v=>setVal({...val,valor:parseFloat(v.replace(",","."))||0})}/>
           <Inp label="Vencimento" value={val.vencimento||""} onChange={v=>setVal({...val,vencimento:v})} placeholder="dd/mm/aaaa"/>
         </div>}
-        <div style={{display:"flex",gap:10,marginTop:16}}><Btn onClick={()=>salvarEdicao(lista,val)} cor={CORES.marsala} full>Salvar</Btn><Btn onClick={()=>setEditando(null)} cor={CORES.marsala} outline full>Cancelar</Btn></div>
+        <div style={{display:"flex",gap:10,marginTop:16}}><Btn onClick={()=>salvarEdicao(lista,val)} full>Salvar</Btn><Btn onClick={()=>setEditando(null)} outline full>Cancelar</Btn></div>
       </div>
     </div>);
   }
@@ -286,6 +392,26 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
   return(<div style={{fontFamily:"'Segoe UI',sans-serif",background:CORES.fundo,minHeight:"100vh",color:CORES.texto}}>
     {confirmarExcluir&&<ModalExcluir onConfirm={()=>excluir(confirmarExcluir.lista,confirmarExcluir.id)} onCancel={()=>setConfirmarExcluir(null)}/>}
     <ModalEdicao/>
+
+    {/* Modal Exportar */}
+    {modalExportar&&<div style={{position:"fixed",inset:0,background:"#000a",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+      <div style={{background:CORES.card,borderRadius:14,padding:24,maxWidth:360,width:"100%",border:`2px solid ${CORES.marsala}`}}>
+        <div style={{fontSize:15,fontWeight:700,color:CORES.marsala,marginBottom:16}}>📤 Exportar Dados</div>
+        <div style={{fontSize:13,color:CORES.textoSuave,marginBottom:12}}>Selecione o que deseja exportar:</div>
+        {[["financeiro","💰 Financeiro"],["emocional","😊 Emocional"],["crencas","🧠 Crenças"],["metas","🎯 Metas"]].map(([k,l])=>(
+          <label key={k} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10,cursor:"pointer"}}>
+            <input type="checkbox" checked={modulosExport[k]} onChange={e=>setModulosExport({...modulosExport,[k]:e.target.checked})} style={{accentColor:CORES.marsala,width:16,height:16}}/>
+            <span style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{l}</span>
+          </label>
+        ))}
+        <div style={{display:"flex",gap:8,marginTop:16,flexWrap:"wrap"}}>
+          <Btn onClick={()=>{exportarPDF(d,modulosExport);setModalExportar(false);}} style={{flex:1}}>📄 Exportar PDF</Btn>
+          <Btn onClick={()=>{exportarCSV(d,d.nome);setModalExportar(false);}} cor={CORES.azul} style={{flex:1}}>📊 Exportar CSV</Btn>
+        </div>
+        <Btn onClick={()=>setModalExportar(false)} outline full style={{marginTop:8}}>Cancelar</Btn>
+      </div>
+    </div>}
+
     <div style={{background:`linear-gradient(135deg,${CORES.marsala},${CORES.marsalaClaro})`,padding:"14px 20px",borderBottom:`2px solid ${CORES.dourado}44`}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -295,6 +421,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {salvando&&<span style={{fontSize:11,color:CORES.dourado}}>Salvando...</span>}
           {contasVencidas>0&&<Badge cor={CORES.vermelho}>⚠ {contasVencidas}</Badge>}
+          <button onClick={()=>setModalExportar(true)} style={{background:"transparent",border:`1px solid ${CORES.dourado}`,color:CORES.dourado,borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:11,fontWeight:700}}>📤 Exportar</button>
           {isMentora&&<Badge cor={CORES.dourado}>Mentora</Badge>}
           {!isMentora&&<button onClick={onLogout} style={{background:"transparent",border:"none",color:"#f5ede8",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>Sair</button>}
         </div>
@@ -323,11 +450,11 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <div style={{display:"flex",gap:6,marginBottom:12}}>{["entrada","saida"].map(t=>(<button key={t} onClick={()=>setMTipo(t)} style={{flex:1,padding:"7px",borderRadius:8,fontSize:12,fontWeight:700,cursor:"pointer",background:mTipo===t?(t==="entrada"?CORES.verde:CORES.vermelho):"transparent",color:mTipo===t?"#fff":(t==="entrada"?CORES.verde:CORES.vermelho),border:`2px solid ${t==="entrada"?CORES.verde:CORES.vermelho}`}}>{t==="entrada"?"Entrada":"Saída"}</button>))}</div>
           <Inp label="Descrição" value={mDesc} onChange={setMDesc} placeholder="Ex: Salário de junho"/>
           <Inp label="Valor (R$)" value={mVal} onChange={setMVal} placeholder="0,00"/>
-          <Sel label="Categoria" value={mCat} onChange={setMCat} options={CAT_OPTS}/>
-          {mCat==="outro"&&<Inp label="Especifique" value={mCatOutro} onChange={setMCatOutro} placeholder="Ex: Assinatura, Pet..."/>}
+          <Sel label="Categoria" value={mCat} onChange={setMCat} options={buildCatOpts()}/>
+          {mCat==="outro"&&<Inp label="Especifique (será salvo para uso futuro)" value={mCatOutro} onChange={setMCatOutro} placeholder="Ex: Assinatura, Pet..."/>}
           <Sel label="Emoção associada (opcional)" value={mEmo} onChange={setMEmo} options={[{v:"",l:"— Nenhuma —"},...EMOCOES_POSITIVAS.map(e=>({v:e,l:"😊 "+e})),...EMOCOES_NEGATIVAS.map(e=>({v:e,l:"😟 "+e}))]}/>
           <Inp label="Data (em branco = hoje)" value={mData} onChange={setMData} type="date"/>
-          <Btn onClick={addMov} cor={CORES.marsala}>Registrar</Btn>
+          <Btn onClick={addMov}>Registrar</Btn>
         </Card>
         {movs.filter(m=>m.tipo!=="investimento").length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhuma movimentação ainda.</div>}
         {[...movs.filter(m=>m.tipo!=="investimento")].reverse().map(m=>(<Card key={m.id} style={{padding:"10px 14px"}}>
@@ -335,7 +462,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{m.descricao}</div>
               <div style={{fontSize:11,color:CORES.textoSuave,marginTop:2}}>{m.data} · {m.categoria}</div>
-              {m.emocao&&<div style={{marginTop:4,display:"inline-block",background:CORES.marsala+"11",border:`1px solid ${CORES.marsala}33`,borderRadius:20,padding:"2px 10px",fontSize:11,color:CORES.marsala,fontWeight:600}}>😊 {m.emocao}</div>}
+              {m.emocao&&<div style={{marginTop:4,display:"inline-block",background:CORES.marsala+"11",border:`1px solid ${CORES.marsala}33`,borderRadius:20,padding:"2px 10px",fontSize:11,color:CORES.marsala,fontWeight:600}}>{EMOCOES_POSITIVAS.includes(m.emocao)?"😊":"😟"} {m.emocao}</div>}
             </div>
             <div style={{fontWeight:700,color:m.tipo==="entrada"?CORES.verde:CORES.vermelho,marginLeft:8}}>{m.tipo==="saida"?"-":""}{fmt(m.valor)}</div>
           </div>
@@ -350,8 +477,9 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <Inp label="Descrição" value={cDesc} onChange={setCDesc} placeholder="Ex: Aluguel..."/>
           <Inp label="Valor (R$)" value={cVal} onChange={setCVal} placeholder="0,00"/>
           <Inp label="Vencimento" value={cVenc} onChange={setCVenc} type="date"/>
-          <Sel label="Categoria" value={cCat} onChange={setCCat} options={[{v:"conta",l:"Conta fixa"},{v:"servico",l:"Serviço"},{v:"cliente",l:"Pagamento de cliente"},{v:"freelance",l:"Freelance"},{v:"aluguel",l:"Aluguel"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"},{v:"outro",l:"Outro"}]}/>
-          <Btn onClick={addConta} cor={CORES.marsala}>Agendar</Btn>
+          <Sel label="Categoria" value={cCat} onChange={setCCat} options={buildCatAgendaOpts()}/>
+          {cCat==="outro"&&<Inp label="Especifique (será salvo para uso futuro)" value={cCatOutro} onChange={setCCatOutro} placeholder="Ex: Academia, Seguro..."/>}
+          <Btn onClick={addConta}>Agendar</Btn>
         </Card>
         {contas.length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhum agendamento cadastrado.</div>}
         {[["vencida","⚠ Vencidas",CORES.vermelho],["pendente","Pendentes",CORES.marsala],["executada","✅ Executadas",CORES.verde]].map(([status,titulo,cor])=>{
@@ -360,7 +488,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           return(<div key={status}><div style={{fontSize:13,fontWeight:700,color:cor,marginBottom:8,marginTop:4}}>{titulo}</div>
             {lista.map(c=>(<Card key={c.id} style={status==="vencida"?{border:`2px solid ${CORES.vermelho}`,background:CORES.vermelho+"11"}:status==="executada"?{opacity:0.7}:{}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div><div style={{fontWeight:700,fontSize:13,color:status==="vencida"?CORES.vermelho:CORES.texto}}>{c.descricao}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{status==="executada"?`Exec. ${c.dataExec} · Vencia ${c.vencimento}`:`Venc. ${c.vencimento}`} · {c.tipo==="pagar"?"A Pagar":"A Receber"}</div></div>
+                <div><div style={{fontWeight:700,fontSize:13,color:status==="vencida"?CORES.vermelho:CORES.texto}}>{c.descricao}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{status==="executada"?`Exec. ${c.dataExec} · Vencia ${c.vencimento}`:`Venc. ${c.vencimento}`} · {c.tipo==="pagar"?"A Pagar":"A Receber"} · {c.categoria}</div></div>
                 <div style={{fontWeight:700,color:c.tipo==="receber"?CORES.verde:CORES.vermelho}}>{fmt(c.valor)}</div>
               </div>
               {status!=="executada"&&<div style={{display:"flex",gap:6,marginTop:8}}>
@@ -380,10 +508,10 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <Inp label="Valor (R$)" value={rVal} onChange={setRVal} placeholder="0,00"/>
           <Sel label="Tipo" value={rTipo} onChange={setRTipo} options={[{v:"dividendos",l:"Dividendos"},{v:"juros",l:"Juros / CDB / Tesouro"},{v:"aluguel",l:"Aluguel de imóvel"},{v:"renda_passiva",l:"Renda passiva"},{v:"bonus",l:"Bônus / Comissão"},{v:"outro",l:"Outro"}]}/>
           <Inp label="Data (em branco = hoje)" value={rData} onChange={setRData} type="date"/>
-          <Btn onClick={addRend} cor={CORES.marsala}>Registrar</Btn>
+          <Btn onClick={addRend}>Registrar</Btn>
         </Card>
         <div style={{fontSize:12,color:CORES.textoSuave,marginBottom:12,background:CORES.cardClaro,borderRadius:8,padding:"8px 12px",borderLeft:`3px solid ${CORES.verde}`}}>Total de rendimentos: <strong style={{color:CORES.verde}}>{fmt(totalRend)}</strong></div>
-        {rendimentos.length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhum rendimento registrado ainda.</div>}
+        {rendimentos.length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhum rendimento ainda.</div>}
         {[...rendimentos].reverse().map(r=>(<Card key={r.id} style={{padding:"10px 14px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{r.descricao}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{r.data} · {r.tipo}</div></div>
@@ -400,10 +528,10 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <Inp label="Valor aportado (R$)" value={iVal} onChange={setIVal} placeholder="0,00"/>
           <Sel label="Tipo" value={iTipo} onChange={setITipo} options={[{v:"renda_fixa",l:"Renda Fixa (CDB, Tesouro, LCI...)"},{v:"renda_variavel",l:"Renda Variável (Ações, FIIs, ETFs...)"},{v:"cripto",l:"Criptoativos"},{v:"previdencia",l:"Previdência Privada"},{v:"outro",l:"Outro"}]}/>
           <Inp label="Data (em branco = hoje)" value={iData} onChange={setIData} type="date"/>
-          <Btn onClick={addInv} cor={CORES.marsala}>Registrar Aporte</Btn>
+          <Btn onClick={addInv}>Registrar Aporte</Btn>
         </Card>
         <div style={{fontSize:12,color:CORES.textoSuave,marginBottom:12,background:CORES.cardClaro,borderRadius:8,padding:"8px 12px",borderLeft:`3px solid ${CORES.azul}`}}>Total investido: <strong style={{color:CORES.azul}}>{fmt(inv)}</strong></div>
-        {movs.filter(m=>m.tipo==="investimento").length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhum investimento registrado ainda.</div>}
+        {movs.filter(m=>m.tipo==="investimento").length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhum investimento ainda.</div>}
         {[...movs.filter(m=>m.tipo==="investimento")].reverse().map(m=>(<Card key={m.id} style={{padding:"10px 14px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{m.descricao}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{m.data} · {m.categoria}</div></div>
@@ -421,7 +549,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <div style={{marginBottom:12}}><label style={{display:"block",fontSize:12,color:CORES.dourado,marginBottom:4,fontWeight:600}}>Intensidade: {eInt}/5</label><input type="range" min="1" max="5" value={eInt} onChange={e=>setEInt(e.target.value)} style={{width:"100%",accentColor:CORES.marsala}}/></div>
           <Inp label="Contexto" value={eCont} onChange={setECont} placeholder="O que aconteceu quando sentiu isso?"/>
           <Inp label="Data (em branco = hoje)" value={eData} onChange={setEData} type="date"/>
-          <Btn onClick={addEmo} cor={CORES.marsala}>Registrar</Btn>
+          <Btn onClick={addEmo}>Registrar</Btn>
         </Card>
         {emocoes.length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhuma emoção registrada ainda.</div>}
         {[...emocoes].reverse().map(e=>(<Card key={e.id} style={{padding:"10px 14px"}}>
@@ -434,8 +562,8 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
       </div>}
 
       {aba===5&&<div>
-        <Card><div style={{fontSize:14,fontWeight:700,color:CORES.marsala,marginBottom:12}}>Adicionar da Base</div><Sel label="Selecione" value={cSel} onChange={setCSel} options={[{v:"",l:"— Selecione —"},...CRENCAS_BASE.map(c=>({v:String(c.id),l:`[${c.categoria}] ${c.crenca}`}))]}/><Btn onClick={addCrencaPre} cor={CORES.marsala}>Adicionar</Btn></Card>
-        <Card><div style={{fontSize:14,fontWeight:700,color:CORES.marsala,marginBottom:12}}>Crença Personalizada</div><Inp label="Crença" value={cPers} onChange={setCPers} placeholder="Descreva a crença..."/><Inp label="Ressignificação" value={rPers} onChange={setRPers} placeholder="Frase de repadronização..."/><Btn onClick={addCrencaPers} cor={CORES.marsala}>Adicionar</Btn></Card>
+        <Card><div style={{fontSize:14,fontWeight:700,color:CORES.marsala,marginBottom:12}}>Adicionar da Base</div><Sel label="Selecione" value={cSel} onChange={setCSel} options={[{v:"",l:"— Selecione —"},...CRENCAS_BASE.map(c=>({v:String(c.id),l:`[${c.categoria}] ${c.crenca}`}))]}/><Btn onClick={addCrencaPre}>Adicionar</Btn></Card>
+        <Card><div style={{fontSize:14,fontWeight:700,color:CORES.marsala,marginBottom:12}}>Crença Personalizada</div><Inp label="Crença" value={cPers} onChange={setCPers} placeholder="Descreva a crença..."/><Inp label="Ressignificação" value={rPers} onChange={setRPers} placeholder="Frase de repadronização..."/><Btn onClick={addCrencaPers}>Adicionar</Btn></Card>
         {crencas.length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhuma crença mapeada ainda.</div>}
         {crencas.map(c=>(<Card key={c.id}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{flex:1,fontWeight:700,fontSize:13,color:c.status==="ressignificada"?CORES.verde:CORES.vermelho}}>{c.crenca}</div><Badge cor={c.status==="ressignificada"?CORES.verde:CORES.vermelho}>{c.status==="ressignificada"?"Ressignificada":"Ativa"}</Badge></div>
@@ -457,7 +585,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <Sel label="Tipo" value={metaTipo} onChange={setMetaTipo} options={[{v:"financeira",l:"Financeira"},{v:"comportamental",l:"Comportamental"},{v:"habito",l:"Hábito"}]}/>
           <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Total da meta" value={metaVal} onChange={setMetaVal} placeholder="100"/></div><div style={{flex:1}}><Inp label="Progresso atual" value={metaAt} onChange={setMetaAt} placeholder="0"/></div></div>
           <Inp label="Prazo" value={metaPrazo} onChange={setMetaPrazo} type="date"/>
-          <Btn onClick={addMeta} cor={CORES.marsala}>Criar Meta</Btn>
+          <Btn onClick={addMeta}>Criar Meta</Btn>
         </Card>
         {metas.length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhuma meta cadastrada ainda.</div>}
         {metas.map(m=>(<Card key={m.id}>
@@ -477,25 +605,17 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>📅 Agendamentos</div>
         <div style={{fontSize:12,color:CORES.textoSuave}}>Pendentes: {contas.filter(c=>c.status!=="executada"&&statusConta(c.vencimento)==="pendente").length} · <span style={{color:CORES.vermelho}}>Vencidas: {contas.filter(c=>c.status!=="executada"&&statusConta(c.vencimento)==="vencida").length}</span> · <span style={{color:CORES.verde}}>Executadas: {contas.filter(c=>c.status==="executada").length}</span></div>
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>😊 Mapa Emocional</div>
-        {(() => {
-          const emocoesMovs = movs.filter(m=>m.emocao).map(m=>({nome:m.emocao,tipo:EMOCOES_POSITIVAS.includes(m.emocao)?"positiva":"negativa",contexto:m.descricao,data:m.data}));
-          const todasEmocoes = [...emocoes, ...emocoesMovs];
-          if(todasEmocoes.length===0) return <div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma emoção registrada.</div>;
-          return <div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:6}}>
-              {Array.from(new Set(todasEmocoes.map(e=>e.nome))).map(nome=>{
-                const qtd=todasEmocoes.filter(e=>e.nome===nome).length;
-                const pos=EMOCOES_POSITIVAS.includes(nome);
-                return <span key={nome} style={{background:(pos?CORES.verde:CORES.vermelho)+"22",color:pos?CORES.verde:CORES.vermelho,border:`1px solid ${pos?CORES.verde:CORES.vermelho}44`,borderRadius:20,padding:"3px 10px",fontSize:12}}>{nome} ({qtd})</span>;
-              })}
-            </div>
-            <div style={{fontSize:12,color:CORES.textoSuave}}>Positivas: {todasEmocoes.filter(e=>EMOCOES_POSITIVAS.includes(e.nome)).length} · Negativas: {todasEmocoes.filter(e=>EMOCOES_NEGATIVAS.includes(e.nome)).length}</div>
-          </div>;
-        })()}
+        {todasEmo.length===0?<div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma emoção registrada.</div>:<div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:6}}>{Array.from(new Set(todasEmo.map(e=>e.nome))).map(nome=>{const qtd=todasEmo.filter(e=>e.nome===nome).length;const pos=EMOCOES_POSITIVAS.includes(nome);return <span key={nome} style={{background:(pos?CORES.verde:CORES.vermelho)+"22",color:pos?CORES.verde:CORES.vermelho,border:`1px solid ${pos?CORES.verde:CORES.vermelho}44`,borderRadius:20,padding:"3px 10px",fontSize:12}}>{nome} ({qtd})</span>;})}</div>
+          <div style={{fontSize:12,color:CORES.textoSuave}}>Positivas: {todasEmo.filter(e=>EMOCOES_POSITIVAS.includes(e.nome)).length} · Negativas: {todasEmo.filter(e=>EMOCOES_NEGATIVAS.includes(e.nome)).length}</div>
+        </div>}
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>🧠 Crenças</div>
         {crencas.length===0?<div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma crença mapeada.</div>:<div><div style={{fontSize:12,color:CORES.textoSuave,marginBottom:6}}>Total: {crencas.length} · Ativas: {crencas.filter(c=>c.status==="ativa").length} · Ressignificadas: {crencas.filter(c=>c.status==="ressignificada").length}</div>{crencas.map(c=>(<div key={c.id} style={{padding:"6px 10px",borderLeft:`3px solid ${c.status==="ressignificada"?CORES.verde:CORES.vermelho}`,marginBottom:6,background:CORES.cardClaro,borderRadius:"0 6px 6px 0"}}><div style={{fontSize:12,fontWeight:600,color:CORES.texto}}>{c.crenca}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{c.status==="ressignificada"?"✅ Ressignificada":"⚠️ Em processo"}</div></div>))}</div>}
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>🎯 Metas</div>
         {metas.length===0?<div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma meta cadastrada.</div>:metas.map(m=>(<div key={m.id} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{m.titulo}</span><Badge cor={CORES.marsala}>{Math.min(100,Math.round((m.atual/m.meta)*100))}%</Badge></div><Barra atual={m.atual} meta={m.meta}/></div>))}
+        <div style={{marginTop:16,display:"flex",gap:8"}}>
+          <Btn onClick={()=>setModalExportar(true)}>📤 Exportar Dados</Btn>
+        </div>
       </Card>}
 
       {aba===8&&<Card style={{padding:0,overflow:"hidden"}}>
@@ -520,7 +640,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
         <Inp label="Confirmar nova senha" value={senhaConf} onChange={setSenhaConf} type="password" placeholder="Repita a nova senha"/>
         {erroSenha&&<div style={{color:CORES.vermelho,fontSize:12,marginBottom:10}}>{erroSenha}</div>}
         {msgSenha&&<div style={{color:CORES.verde,fontSize:12,marginBottom:10}}>{msgSenha}</div>}
-        <Btn onClick={trocarSenha} cor={CORES.marsala}>Alterar Senha</Btn>
+        <Btn onClick={trocarSenha}>Alterar Senha</Btn>
       </Card>}
 
     </div>
