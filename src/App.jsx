@@ -701,7 +701,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
                 </div>
               </div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
-                {[{l:"Cotas",v:a.totalCotas.toFixed(4)},{l:"Preço Médio",v:fmt(a.precoMedio)},{l:"Investido",v:fmt(a.totalInvestido)},{l:"Valor Atual",v:a.precoAtual>0?fmt(a.valorAtual):"—"}].map(x=>(
+                {[{l:"Cotas",v:Number(a.totalCotas).toLocaleString("pt-BR",{maximumFractionDigits:4})},{l:"Preço Médio",v:fmt(a.precoMedio)},{l:"Investido",v:fmt(a.totalInvestido)},{l:"Valor Atual",v:a.precoAtual>0?fmt(a.valorAtual):"—"}].map(x=>(
                   <div key={x.l} style={{background:C.cardClaro,borderRadius:8,padding:"6px 10px",flex:1,minWidth:70,textAlign:"center"}}>
                     <div style={{fontSize:10,color:C.textoSuave}}>{x.l}</div>
                     <div style={{fontSize:12,fontWeight:700,color:C.texto}}>{x.v}</div>
@@ -711,8 +711,28 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
               {a.precoAtual>0&&<div style={{fontSize:12,color:a.lucro>=0?C.verde:C.vermelho,fontWeight:600}}>Lucro/Prejuízo: {fmt(a.lucro)}</div>}
               {/* Histórico de aportes */}
               {(a.aportes||[]).length>0&&<div style={{marginTop:8}}>
-                <div style={{fontSize:11,color:C.textoSuave,marginBottom:4}}>Aportes:</div>
-                {a.aportes.map(ap=>(<div key={ap.id} style={{fontSize:11,color:C.textoSuave,padding:"2px 0",borderBottom:`1px solid ${C.cardClaro}`}}>{ap.data} — {ap.qtd} cotas × {fmt(ap.preco)} = {fmt(ap.qtd*ap.preco)}</div>))}
+                <div style={{fontSize:11,color:C.textoSuave,marginBottom:4,fontWeight:600}}>Aportes:</div>
+                {a.aportes.map((ap,idx)=>(
+                  <div key={ap.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,padding:"4px 0",borderBottom:`1px solid ${C.cardClaro}`}}>
+                    <span style={{color:C.textoSuave}}>{ap.data} — {Number(ap.qtd).toLocaleString("pt-BR",{maximumFractionDigits:4})} cotas × {fmt(ap.preco)} = {fmt(ap.qtd*ap.preco)}</span>
+                    <div style={{display:"flex",gap:4,marginLeft:8}}>
+                      <button onClick={()=>{
+                        const novo=window.prompt(`Editar quantidade (atual: ${ap.qtd})`);
+                        const novoPreco=window.prompt(`Editar preço por cota (atual: ${ap.preco})`);
+                        if(novo!==null&&novoPreco!==null){
+                          const novosAtivos=ativos.map(x=>x.nome===a.nome?{...x,aportes:x.aportes.map(p=>p.id===ap.id?{...p,qtd:parseFloat(novo)||ap.qtd,preco:parseFloat(novoPreco.replace(",","."))||ap.preco}:p)}:x);
+                          upd("ativos",novosAtivos);
+                        }
+                      }} style={{background:"transparent",border:`1px solid ${C.dourado}`,color:C.dourado,borderRadius:6,padding:"2px 6px",fontSize:10,cursor:"pointer"}}>✏</button>
+                      <button onClick={()=>{
+                        if(window.confirm("Excluir este aporte?")){
+                          const novosAtivos=ativos.map(x=>x.nome===a.nome?{...x,aportes:x.aportes.filter(p=>p.id!==ap.id)}:x);
+                          upd("ativos",novosAtivos);
+                        }
+                      }} style={{background:"transparent",border:`1px solid ${C.vermelho}`,color:C.vermelho,borderRadius:6,padding:"2px 6px",fontSize:10,cursor:"pointer"}}>🗑</button>
+                    </div>
+                  </div>
+                ))}
               </div>}
               {(a.vendas||[]).length>0&&<div style={{marginTop:8}}>
                 <div style={{fontSize:11,color:C.textoSuave,marginBottom:4}}>Vendas:</div>
