@@ -175,7 +175,22 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
   const contasVencidas=contas.filter(c=>c.status!=="executada"&&statusConta(c.vencimento)==="vencida").length;
 
   const [mTipo,setMTipo]=useState("entrada"); const [mDesc,setMDesc]=useState(""); const [mVal,setMVal]=useState(""); const [mCat,setMCat]=useState("salario"); const [mCatOutro,setMCatOutro]=useState(""); const [mEmo,setMEmo]=useState(""); const [mData,setMData]=useState("");
-  function addMov(){if(!mDesc||!mVal)return;const catFinal=mCat==="outro"&&mCatOutro.trim()?mCatOutro.trim():mCat;const dataFmt=mData?strParaData(mData).toLocaleDateString("pt-BR"):hoje();upd("movs",[...movs,{id:Date.now(),tipo:mTipo,descricao:mDesc,valor:parseFloat(mVal.replace(",",".")),categoria:catFinal,emocao:mEmo,data:dataFmt}]);setMDesc("");setMVal("");setMEmo("");setMData("");setMCatOutro("");}
+  function addMov(){
+    if(!mDesc||!mVal)return;
+    const catFinal=mCat==="outro"&&mCatOutro.trim()?mCatOutro.trim():mCat;
+    const dataFmt=mData?strParaData(mData).toLocaleDateString("pt-BR"):hoje();
+    const novasMov=[...movs,{
+      id:Date.now(),
+      tipo:mTipo,
+      descricao:mDesc,
+      valor:parseFloat(mVal.replace(",",".")),
+      categoria:catFinal,
+      emocao:mEmo||"",
+      data:dataFmt
+    }];
+    upd("movs", novasMov);
+    setMDesc("");setMVal("");setMEmo("");setMData("");setMCatOutro("");
+  }
 
   const [cTipo,setCTipo]=useState("pagar"); const [cDesc,setCDesc]=useState(""); const [cVal,setCVal]=useState(""); const [cVenc,setCVenc]=useState(""); const [cCat,setCCat]=useState("conta");
   function addConta(){if(!cDesc||!cVal||!cVenc)return;upd("contas",[...contas,{id:Date.now(),tipo:cTipo,descricao:cDesc,valor:parseFloat(cVal.replace(",",".")),vencimento:strParaData(cVenc).toLocaleDateString("pt-BR"),categoria:cCat,status:"pendente"}]);setCDesc("");setCVal("");setCVenc("");}
@@ -316,9 +331,13 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
         </Card>
         {movs.filter(m=>m.tipo!=="investimento").length===0&&<div style={{color:CORES.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhuma movimentação ainda.</div>}
         {[...movs.filter(m=>m.tipo!=="investimento")].reverse().map(m=>(<Card key={m.id} style={{padding:"10px 14px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{m.descricao}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{m.data} · {m.categoria}{m.emocao?" · "+m.emocao:""}</div></div>
-            <div style={{fontWeight:700,color:m.tipo==="entrada"?CORES.verde:CORES.vermelho}}>{m.tipo==="saida"?"-":""}{fmt(m.valor)}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{m.descricao}</div>
+              <div style={{fontSize:11,color:CORES.textoSuave,marginTop:2}}>{m.data} · {m.categoria}</div>
+              {m.emocao&&<div style={{marginTop:4,display:"inline-block",background:CORES.marsala+"11",border:`1px solid ${CORES.marsala}33`,borderRadius:20,padding:"2px 10px",fontSize:11,color:CORES.marsala,fontWeight:600}}>😊 {m.emocao}</div>}
+            </div>
+            <div style={{fontWeight:700,color:m.tipo==="entrada"?CORES.verde:CORES.vermelho,marginLeft:8}}>{m.tipo==="saida"?"-":""}{fmt(m.valor)}</div>
           </div>
           <AcoesCard lista="movs" item={m}/>
         </Card>))}
@@ -458,7 +477,21 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>📅 Agendamentos</div>
         <div style={{fontSize:12,color:CORES.textoSuave}}>Pendentes: {contas.filter(c=>c.status!=="executada"&&statusConta(c.vencimento)==="pendente").length} · <span style={{color:CORES.vermelho}}>Vencidas: {contas.filter(c=>c.status!=="executada"&&statusConta(c.vencimento)==="vencida").length}</span> · <span style={{color:CORES.verde}}>Executadas: {contas.filter(c=>c.status==="executada").length}</span></div>
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>😊 Mapa Emocional</div>
-        {emocoes.length===0?<div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma emoção registrada.</div>:<div><div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:6}}>{Array.from(new Set(emocoes.map(e=>e.nome))).map(nome=>{const qtd=emocoes.filter(e=>e.nome===nome).length;const pos=emocoes.find(e=>e.nome===nome)?.tipo==="positiva";return <span key={nome} style={{background:(pos?CORES.verde:CORES.vermelho)+"22",color:pos?CORES.verde:CORES.vermelho,border:`1px solid ${pos?CORES.verde:CORES.vermelho}44`,borderRadius:20,padding:"3px 10px",fontSize:12}}>{nome} ({qtd})</span>;})}</div><div style={{fontSize:12,color:CORES.textoSuave}}>Positivas: {emocoes.filter(e=>e.tipo==="positiva").length} · Negativas: {emocoes.filter(e=>e.tipo==="negativa").length}</div></div>}
+        {(() => {
+          const emocoesMovs = movs.filter(m=>m.emocao).map(m=>({nome:m.emocao,tipo:EMOCOES_POSITIVAS.includes(m.emocao)?"positiva":"negativa",contexto:m.descricao,data:m.data}));
+          const todasEmocoes = [...emocoes, ...emocoesMovs];
+          if(todasEmocoes.length===0) return <div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma emoção registrada.</div>;
+          return <div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:6}}>
+              {Array.from(new Set(todasEmocoes.map(e=>e.nome))).map(nome=>{
+                const qtd=todasEmocoes.filter(e=>e.nome===nome).length;
+                const pos=EMOCOES_POSITIVAS.includes(nome);
+                return <span key={nome} style={{background:(pos?CORES.verde:CORES.vermelho)+"22",color:pos?CORES.verde:CORES.vermelho,border:`1px solid ${pos?CORES.verde:CORES.vermelho}44`,borderRadius:20,padding:"3px 10px",fontSize:12}}>{nome} ({qtd})</span>;
+              })}
+            </div>
+            <div style={{fontSize:12,color:CORES.textoSuave}}>Positivas: {todasEmocoes.filter(e=>EMOCOES_POSITIVAS.includes(e.nome)).length} · Negativas: {todasEmocoes.filter(e=>EMOCOES_NEGATIVAS.includes(e.nome)).length}</div>
+          </div>;
+        })()}
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>🧠 Crenças</div>
         {crencas.length===0?<div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma crença mapeada.</div>:<div><div style={{fontSize:12,color:CORES.textoSuave,marginBottom:6}}>Total: {crencas.length} · Ativas: {crencas.filter(c=>c.status==="ativa").length} · Ressignificadas: {crencas.filter(c=>c.status==="ressignificada").length}</div>{crencas.map(c=>(<div key={c.id} style={{padding:"6px 10px",borderLeft:`3px solid ${c.status==="ressignificada"?CORES.verde:CORES.vermelho}`,marginBottom:6,background:CORES.cardClaro,borderRadius:"0 6px 6px 0"}}><div style={{fontSize:12,fontWeight:600,color:CORES.texto}}>{c.crenca}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{c.status==="ressignificada"?"✅ Ressignificada":"⚠️ Em processo"}</div></div>))}</div>}
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>🎯 Metas</div>
