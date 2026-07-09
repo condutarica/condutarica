@@ -213,7 +213,7 @@ function PainelMentora({onLogout}){
             <div style={{textAlign:"right"}}>
               <div style={{fontSize:11,color:CORES.textoSuave}}>Saldo</div>
               <div style={{fontWeight:700,color:saldo>=0?CORES.verde:CORES.vermelho,fontSize:13,marginBottom:8}}>{fmt(saldo)}</div>
-              <div style={{display:"flex",gap:6"}}>
+              <div style={{display:"flex",gap:6}}>
                 <Btn onClick={()=>setClienteAberto(c)} sm>Abrir</Btn>
                 <Btn onClick={()=>abrirEdicao(c)} sm outline>✏ Editar</Btn>
               </div>
