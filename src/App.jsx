@@ -26,11 +26,13 @@ async function sbPatch(tabela, id, body) {
   return r.json();
 }
 
-const NÚCLEOS = {
-  Marsala:"#4A1020", marsalaClaro:"#6B1A30", Dourado:"#C9A84C", douradoClaro:"#9A6F2A",
-  Fundo:"#F5EFE6", Cartão:"#FFFFFF", cardClaro:"#F0E8DC", Texto:"#2C1A10",
-  textoSuave:"#7A5C4A", verde:"#2E7D52", vermelho:"#C0392B", Azul:"#2471A3",
+const CORES = {
+  marsala:"#4A1020", marsalaClaro:"#6B1A30", dourado:"#C9A84C", douradoClaro:"#9A6F2A",
+  fundo:"#F5EFE6", card:"#FFFFFF", cardClaro:"#F0E8DC", texto:"#2C1A10",
+  textoSuave:"#7A5C4A", verde:"#2E7D52", vermelho:"#C0392B", azul:"#2471A3",
 };
+// CORES_OK
+
 
 const EMOCOES_POSITIVAS = ["Gratidão","Confiança","Motivação","Leveza","Orgulho","Alegria","Serenidade","Esperança","Satisfação","Empoderamento"];
 const EMOCOES_NEGATIVAS = ["Medo","Culpa","Ansiedade","Impulsividade","Vergonha","Raiva","Tristeza","Desânimo","Inveja","Insegurança"];
