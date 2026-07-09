@@ -51,7 +51,17 @@ function calcSaldoMes(movs,rendimentos,mesAno){
   const e=(movs||[]).filter(m=>m.tipo==="entrada"&&mesAnoDeData(m.data)===mesAno).reduce((a,m)=>a+m.valor,0);
   const r=(rendimentos||[]).filter(r=>mesAnoDeData(r.data)===mesAno).reduce((a,r)=>a+r.valor,0);
   const s=(movs||[]).filter(m=>m.tipo==="saida"&&mesAnoDeData(m.data)===mesAno).reduce((a,m)=>a+m.valor,0);
+  // Aportes do mês (RV e RF) saem do saldo
   return e+r-s;
+}
+
+function calcSaldoMesComInv(movs,rendimentos,ativos,rf,mesAno){
+  const base=calcSaldoMes(movs,rendimentos,mesAno);
+  // Soma aportes de RV do mês
+  const aporteRV=(ativos||[]).flatMap(a=>(a.aportes||[]).filter(ap=>mesAnoDeData(ap.data)===mesAno).map(ap=>ap.qtd*ap.preco)).reduce((a,v)=>a+v,0);
+  // Soma aportes de RF do mês
+  const aporteRF=(rf||[]).filter(r=>mesAnoDeData(r.data)===mesAno).reduce((a,r)=>a+r.valor,0);
+  return base-aporteRV-aporteRF;
 }
 
 // Todos os meses com lançamentos
@@ -286,7 +296,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
   const meses=getMesesComLancamentos(movs,rendimentos);
 
   // Saldo do mês atual
-  const saldoMesAtual=calcSaldoMes(movs,rendimentos,mesAnoAtual());
+  const saldoMesAtual=calcSaldoMesComInv(movs,rendimentos,ativos,rf,mesAnoAtual());
   const totalInvestidoRV=carteiraCalc.reduce((a,x)=>a+x.totalInvestido,0);
   const totalInvestidoRF=rf.reduce((a,x)=>a+x.valor,0);
   const totalCarteira=carteiraCalc.reduce((a,x)=>a+(x.valorAtual||x.totalInvestido),0)+totalInvestidoRF;
