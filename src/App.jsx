@@ -27,9 +27,9 @@ async function sbPatch(tabela, id, body) {
 }
 
 const CORES = {
-  marsala:"#4A1020", marsalaClaro:"#6B1A30", dourado:"#C9A84C", douradoClaro:"#9A6F2A",
-  fundo:"#F5EFE6", card:"#FFFFFF", cardClaro:"#F0E8DC", texto:"#2C1A10",
-  textoSuave:"#7A5C4A", verde:"#2E7D52", vermelho:"#C0392B", azul:"#2471A3",
+  marsala:"#4A1020", marsalaClaro:"#6B1A30", dourado:"#B8860B", douradoClaro:"#8B6508",
+  fundo:"#F5EFE6", card:"#FFFFFF", cardClaro:"#EDE4D8", texto:"#1A0A0E",
+  textoSuave:"#5C3D2E", verde:"#1B6B3A", vermelho:"#A52020", azul:"#1A4F7A",
 };
 // CORES_OK
 
