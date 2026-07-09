@@ -213,7 +213,7 @@ function PainelMentora({onLogout}){
             <div style={{textAlign:"right"}}>
               <div style={{fontSize:11,color:CORES.textoSuave}}>Saldo</div>
               <div style={{fontWeight:700,color:saldo>=0?CORES.verde:CORES.vermelho,fontSize:13,marginBottom:8}}>{fmt(saldo)}</div>
-              <div style={{display:"flex",gap:6}}>
+              <div style={{display:"flex",gap:6"}}>
                 <Btn onClick={()=>setClienteAberto(c)} sm>Abrir</Btn>
                 <Btn onClick={()=>abrirEdicao(c)} sm outline>✏ Editar</Btn>
               </div>
@@ -613,7 +613,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
         {crencas.length===0?<div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma crença mapeada.</div>:<div><div style={{fontSize:12,color:CORES.textoSuave,marginBottom:6}}>Total: {crencas.length} · Ativas: {crencas.filter(c=>c.status==="ativa").length} · Ressignificadas: {crencas.filter(c=>c.status==="ressignificada").length}</div>{crencas.map(c=>(<div key={c.id} style={{padding:"6px 10px",borderLeft:`3px solid ${c.status==="ressignificada"?CORES.verde:CORES.vermelho}`,marginBottom:6,background:CORES.cardClaro,borderRadius:"0 6px 6px 0"}}><div style={{fontSize:12,fontWeight:600,color:CORES.texto}}>{c.crenca}</div><div style={{fontSize:11,color:CORES.textoSuave}}>{c.status==="ressignificada"?"✅ Ressignificada":"⚠️ Em processo"}</div></div>))}</div>}
         <div style={{fontSize:13,fontWeight:700,color:CORES.marsala,marginTop:16,marginBottom:8}}>🎯 Metas</div>
         {metas.length===0?<div style={{color:CORES.textoSuave,fontSize:12}}>Nenhuma meta cadastrada.</div>:metas.map(m=>(<div key={m.id} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,fontWeight:600,color:CORES.texto}}>{m.titulo}</span><Badge cor={CORES.marsala}>{Math.min(100,Math.round((m.atual/m.meta)*100))}%</Badge></div><Barra atual={m.atual} meta={m.meta}/></div>))}
-        <div style={{marginTop:16,display:"flex",gap:8}}>
+        <div style={{marginTop:16,display:"flex",gap:8"}}>
           <Btn onClick={()=>setModalExportar(true)}>📤 Exportar Dados</Btn>
         </div>
       </Card>}
