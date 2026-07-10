@@ -902,6 +902,108 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.cardClaro}`}}><span style={{fontSize:13,color:C.textoSuave}}>Renda Fixa</span><span style={{fontSize:13,fontWeight:700,color:C.verde}}>{fmt(totalInvestidoRF)}</span></div>
           <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.cardClaro}`}}><span style={{fontSize:13,fontWeight:600,color:C.texto}}>Total da Carteira</span><span style={{fontSize:14,fontWeight:800,color:C.marsala}}>{fmt(totalCarteira)}</span></div>
 
+          {/* Gráficos */}
+          <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginTop:16,marginBottom:12}}>📊 Gráficos do Mês</div>
+          {(() => {
+            const ma=mesAnoAtual();
+            const movMes=movs.filter(m=>mesAnoDeData(m.data)===ma&&m.tipo!=="investimento");
+            const entMes=movMes.filter(m=>m.tipo==="entrada");
+            const saiMes=movMes.filter(m=>m.tipo==="saida");
+            const CORES_GRAFICO=["#4A1020","#B8860B","#1B6B3A","#1A4F7A","#8B2252","#2E8B57","#4682B4","#CD853F","#6B8E23","#708090","#C04000","#2F4F4F"];
+
+            function GraficoPizza({dados,titulo}){
+              if(!dados||dados.length===0)return null;
+              const total=dados.reduce((a,d)=>a+d.valor,0);
+              if(total===0)return null;
+              let angulo=0;
+              const fatias=dados.map((d,i)=>{
+                const pct=d.valor/total;
+                const ini=angulo;
+                angulo+=pct*2*Math.PI;
+                return {...d,pct,ini,fim:angulo,cor:CORES_GRAFICO[i%CORES_GRAFICO.length]};
+              });
+              function fatiaPath(ini,fim,r=80){
+                const cx=100,cy=100;
+                const x1=cx+r*Math.sin(ini),y1=cy-r*Math.cos(ini);
+                const x2=cx+r*Math.sin(fim),y2=cy-r*Math.cos(fim);
+                const large=fim-ini>Math.PI?1:0;
+                return `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`;
+              }
+              return(<div style={{marginBottom:16}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.marsala,marginBottom:8}}>{titulo}</div>
+                <div style={{display:"flex",gap:16,alignItems:"center",flexWrap:"wrap"}}>
+                  <svg viewBox="0 0 200 200" style={{width:160,height:160,flexShrink:0}}>
+                    {fatias.map((f,i)=><path key={i} d={fatiaPath(f.ini,f.fim)} fill={f.cor} stroke="#fff" strokeWidth="2"/>)}
+                  </svg>
+                  <div style={{flex:1}}>
+                    {fatias.map((f,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                        <div style={{width:12,height:12,borderRadius:3,background:f.cor,flexShrink:0}}/>
+                        <div style={{fontSize:11}}>
+                          <div style={{fontWeight:600,color:C.texto}}>{f.categoria}</div>
+                          <div style={{color:C.textoSuave}}>{fmt(f.valor)} · {(f.pct*100).toFixed(1)}%</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>);
+            }
+
+            // Agrupa por categoria
+            function agrupar(lista){
+              const m={};
+              lista.forEach(x=>{const k=x.categoria||"outros";m[k]=(m[k]||0)+x.valor;});
+              return Object.entries(m).map(([categoria,valor])=>({categoria,valor})).sort((a,b)=>b.valor-a.valor);
+            }
+
+            return(<div>
+              <GraficoPizza dados={agrupar(entMes)} titulo="Entradas por Categoria"/>
+              <GraficoPizza dados={agrupar(saiMes)} titulo="Saídas por Categoria"/>
+            </div>);
+          })()}
+
+          {/* Gráfico de Investimentos */}
+          {carteiraCalc.length>0&&<div style={{marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:700,color:C.marsala,marginBottom:8}}>Carteira por Ativo</div>
+            {(() => {
+              const CORES_INV=["#4A1020","#B8860B","#1B6B3A","#1A4F7A","#8B2252","#2E8B57","#4682B4","#CD853F","#6B8E23","#708090","#C04000","#2F4F4F"];
+              const total=carteiraCalc.reduce((a,x)=>a+(x.valorAtual||x.totalInvestido),0)+totalInvestidoRF;
+              const dados=[...carteiraCalc.map(a=>({categoria:a.nome,valor:a.valorAtual||a.totalInvestido,tipo:a.tipo})),...(rf.length>0?[{categoria:"Renda Fixa",valor:totalInvestidoRF,tipo:"rf"}]:[])].sort((a,b)=>b.valor-a.valor);
+              let angulo=0;
+              const fatias=dados.map((d,i)=>{
+                const pct=d.valor/total;
+                const ini=angulo;
+                angulo+=pct*2*Math.PI;
+                return {...d,pct,ini,fim:angulo,cor:CORES_INV[i%CORES_INV.length]};
+              });
+              function fatiaPath(ini,fim,r=80){
+                const cx=100,cy=100;
+                const x1=cx+r*Math.sin(ini),y1=cy-r*Math.cos(ini);
+                const x2=cx+r*Math.sin(fim),y2=cy-r*Math.cos(fim);
+                const large=fim-ini>Math.PI?1:0;
+                return `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`;
+              }
+              return(<div style={{display:"flex",gap:16,alignItems:"center",flexWrap:"wrap"}}>
+                <svg viewBox="0 0 200 200" style={{width:160,height:160,flexShrink:0}}>
+                  {fatias.map((f,i)=><path key={i} d={fatiaPath(f.ini,f.fim)} fill={f.cor} stroke="#fff" strokeWidth="2"/>)}
+                </svg>
+                <div style={{flex:1}}>
+                  {fatias.map((f,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                      <div style={{width:12,height:12,borderRadius:3,background:f.cor,flexShrink:0}}/>
+                      <div style={{fontSize:11}}>
+                        <div style={{fontWeight:600,color:C.texto}}>{f.categoria}</div>
+                        <div style={{color:C.textoSuave}}>{fmt(f.valor)} · {(f.pct*100).toFixed(1)}%</div>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{marginTop:8,fontSize:12,fontWeight:700,color:C.marsala}}>Total: {fmt(total)}</div>
+                </div>
+              </div>);
+            })()}
+          </div>}
+
           {/* Emocional */}
           <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginTop:16,marginBottom:8}}>😊 Mapa Emocional</div>
           {todasEmo.length===0?<div style={{color:C.textoSuave,fontSize:12}}>Nenhuma emoção registrada.</div>:<div>
