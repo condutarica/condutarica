@@ -38,6 +38,62 @@ const CAT_MOV=[{v:"salario",l:"Salário"},{v:"freelance",l:"Freelance"},{v:"bonu
 const CAT_AGE=[{v:"conta",l:"Conta fixa"},{v:"servico",l:"Serviço"},{v:"cliente",l:"Pagamento de cliente"},{v:"freelance",l:"Freelance"},{v:"aluguel",l:"Aluguel"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"}];
 
 const fmt=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+
+// ── Gamificação ──
+const NIVEIS=[
+  {nivel:1,nome:"Aprendiz",min:0,cor:"#8B7355"},
+  {nivel:2,nome:"Observador",min:200,cor:"#4682B4"},
+  {nivel:3,nome:"Consciente",min:600,cor:"#2E8B57"},
+  {nivel:4,nome:"Estrategista",min:1200,cor:"#B8860B"},
+  {nivel:5,nome:"Próspero",min:2500,cor:"#4A1020"},
+];
+
+const CONQUISTAS=[
+  {id:"primeiro_registro",icone:"🌱",nome:"Primeiro Passo",desc:"Registrou a primeira movimentação",pts:10,check:d=>(d.movs||[]).filter(m=>m.tipo!=="investimento").length>=1},
+  {id:"semana_registros",icone:"📅",nome:"Semana Consciente",desc:"Registrou 7 movimentações",pts:50,check:d=>(d.movs||[]).filter(m=>m.tipo!=="investimento").length>=7},
+  {id:"mes_positivo",icone:"✅",nome:"Guardião do Mês",desc:"Fechou o mês no positivo",pts:200,check:d=>calcSaldoMes(d.movs,d.rendimentos,mesAnoAtual())>0},
+  {id:"primeiro_investimento",icone:"📈",nome:"Investidor Iniciante",desc:"Fez o primeiro aporte",pts:100,check:d=>(d.ativos||[]).some(a=>(a.aportes||[]).length>0)||(d.rf||[]).length>0},
+  {id:"carteira_1k",icone:"💼",nome:"Carteira Crescendo",desc:"Carteira acima de R$ 1.000",pts:150,check:d=>{const rv=(d.ativos||[]).reduce((a,x)=>{const c=calcCarteira([x])[0];return a+(c.valorAtual||c.totalInvestido);},0);const rf=(d.rf||[]).reduce((a,r)=>a+r.valor,0);return rv+rf>=1000;}},
+  {id:"primeira_emocao",icone:"💭",nome:"Autoconhecimento",desc:"Registrou a primeira emoção",pts:15,check:d=>(d.emocoes||[]).length>=1||(d.movs||[]).some(m=>m.emocao)},
+  {id:"emocoes_7",icone:"🧘",nome:"Mente Presente",desc:"Registrou 7 emoções",pts:50,check:d=>(d.emocoes||[]).length+(d.movs||[]).filter(m=>m.emocao).length>=7},
+  {id:"crenca_ressignificada",icone:"🔓",nome:"Crença Vencida",desc:"Ressignificou a primeira crença",pts:50,check:d=>(d.crencas||[]).some(c=>c.status==="ressignificada")},
+  {id:"3_crencas",icone:"🧠",nome:"Repadronizando",desc:"Ressignificou 3 crenças",pts:150,check:d=>(d.crencas||[]).filter(c=>c.status==="ressignificada").length>=3},
+  {id:"primeira_meta",icone:"🎯",nome:"Com Propósito",desc:"Cadastrou a primeira meta",pts:30,check:d=>(d.metas||[]).length>=1},
+  {id:"meta_batida",icone:"🏆",nome:"Meta Batida",desc:"Concluiu uma meta",pts:100,check:d=>(d.metas||[]).some(m=>m.atual>=m.meta)},
+  {id:"rendimento",icone:"💰",nome:"Renda Passiva",desc:"Registrou o primeiro rendimento",pts:50,check:d=>(d.rendimentos||[]).length>=1},
+  {id:"agendamento",icone:"📆",nome:"Planejador",desc:"Criou o primeiro agendamento",pts:20,check:d=>(d.contas||[]).length>=1},
+  {id:"sequencia_7",icone:"🔥",nome:"7 Dias de Fogo",desc:"7 dias consecutivos no app",pts:100,check:d=>(d.sequencia_dias||0)>=7},
+  {id:"sequencia_30",icone:"⚡",nome:"30 Dias Imparável",desc:"30 dias consecutivos no app",pts:500,check:d=>(d.sequencia_dias||0)>=30},
+];
+
+function calcPontos(d){
+  let pts=0;
+  CONQUISTAS.forEach(c=>{try{if(c.check(d))pts+=c.pts;}catch(_){}});
+  return pts;
+}
+
+function calcNivel(pts){
+  let n=NIVEIS[0];
+  NIVEIS.forEach(x=>{if(pts>=x.min)n=x;});
+  return n;
+}
+
+function calcConquistas(d){
+  return CONQUISTAS.map(c=>{
+    try{return{...c,desbloqueada:c.check(d)};}
+    catch(_){return{...c,desbloqueada:false};}
+  });
+}
+
+function atualizarSequencia(d){
+  const hoje2=new Date().toLocaleDateString("pt-BR");
+  const ultimoAcesso=d.ultimo_acesso_dia||"";
+  const ontem=new Date();ontem.setDate(ontem.getDate()-1);
+  const ontemStr=ontem.toLocaleDateString("pt-BR");
+  if(ultimoAcesso===hoje2)return{sequencia_dias:d.sequencia_dias||1,ultimo_acesso_dia:hoje2};
+  if(ultimoAcesso===ontemStr)return{sequencia_dias:(d.sequencia_dias||0)+1,ultimo_acesso_dia:hoje2};
+  return{sequencia_dias:1,ultimo_acesso_dia:hoje2};
+}
 const fmtPct=v=>(v>=0?"+":"")+Number(v||0).toFixed(2)+"%";
 const hoje=()=>new Date().toLocaleDateString("pt-BR");
 const agoraStr=()=>new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
@@ -259,7 +315,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
   const [d,setD]=useState(dados);
   const [aba,setAba]=useState(0);
   const [salvando,setSalvando]=useState(false);
-  const abas=["Financeiro","Agendamentos","Rendimentos","Investimentos","Emocional","Crenças","Metas","Relatório","Mensagens","Perfil"];
+  const abas=["Financeiro","Agendamentos","Rendimentos","Investimentos","Emocional","Crenças","Metas","Relatório","Conquistas","Mensagens","Perfil"];
   const msgFim=useRef(null);
   const [confirmarExcluir,setConfirmarExcluir]=useState(null);
   const [editando,setEditando]=useState(null);
@@ -273,6 +329,21 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
 
   useEffect(()=>{if(editando)setValEdit({...editando.item});},[editando]);
   useEffect(()=>{msgFim.current?.scrollIntoView({behavior:"smooth"});},[d.msgs]);
+
+  // Atualiza sequência de dias ao entrar
+  useEffect(()=>{
+    const seq=atualizarSequencia(d);
+    if(seq.ultimo_acesso_dia!==d.ultimo_acesso_dia){
+      updMulti(seq);
+    }
+  },[]);
+
+  const pontos=calcPontos(d);
+  const nivel=calcNivel(pontos);
+  const proximoNivel=NIVEIS.find(n=>n.min>pontos);
+  const conquistas=calcConquistas(d);
+  const conquistasDesbloqueadas=conquistas.filter(c=>c.desbloqueada);
+  const sequenciaDias=d.sequencia_dias||0;
 
   // Verifica virada do mês
   useEffect(()=>{
@@ -545,6 +616,11 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           {salvando&&<span style={{fontSize:11,color:C.dourado}}>Salvando...</span>}
           {contasVencidas>0&&<Badge cor={C.vermelho}>⚠ {contasVencidas}</Badge>}
           <button onClick={()=>setModalExportar(true)} style={{background:"transparent",border:`1px solid ${C.dourado}`,color:C.dourado,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontSize:11,fontWeight:700}}>📤</button>
+          {!isMentora&&<div style={{background:"rgba(0,0,0,0.3)",borderRadius:20,padding:"3px 10px",display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontSize:11,color:nivel.cor,fontWeight:800}}>{nivel.nome}</span>
+            <span style={{fontSize:10,color:"#f5ede8aa"}}>⭐{pontos}pts</span>
+            {sequenciaDias>0&&<span style={{fontSize:10,color:"#f5ede8aa"}}>🔥{sequenciaDias}</span>}
+          </div>}
           {isMentora&&<Badge cor={C.dourado}>Mentora</Badge>}
           {!isMentora&&<button onClick={onLogout} style={{background:"transparent",border:"none",color:"#f5ede8",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>Sair</button>}
         </div>
@@ -1026,8 +1102,70 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
         </Card>
       </div>}
 
+      {/* CONQUISTAS */}
+      {aba===8&&<div>
+        {/* Nível atual */}
+        <Card style={{background:`linear-gradient(135deg,${nivel.cor}22,${nivel.cor}11)`}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div>
+              <div style={{fontSize:11,color:C.textoSuave}}>Nível atual</div>
+              <div style={{fontSize:22,fontWeight:900,color:nivel.cor}}>{nivel.nome}</div>
+              <div style={{fontSize:12,color:C.textoSuave}}>⭐ {pontos} pontos de prosperidade</div>
+            </div>
+            <div style={{fontSize:48}}>{nivel.nivel===1?"🌱":nivel.nivel===2?"👁️":nivel.nivel===3?"💡":nivel.nivel===4?"⚡":"🏆"}</div>
+          </div>
+          {proximoNivel&&<div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.textoSuave,marginBottom:4}}>
+              <span>Próximo: {proximoNivel.nome}</span>
+              <span>{pontos}/{proximoNivel.min} pts</span>
+            </div>
+            <div style={{background:C.cardClaro,borderRadius:20,height:8,overflow:"hidden"}}>
+              <div style={{width:`${Math.min(100,(pontos/proximoNivel.min)*100)}%`,background:`linear-gradient(90deg,${nivel.cor},${proximoNivel.cor})`,height:"100%",borderRadius:20,transition:"width 0.5s"}}/>
+            </div>
+          </div>}
+          {!proximoNivel&&<div style={{fontSize:13,fontWeight:700,color:nivel.cor,textAlign:"center",marginTop:8}}>🏆 Nível máximo atingido!</div>}
+        </Card>
+
+        {/* Sequência */}
+        <Card>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:C.marsala}}>🔥 Sequência de Dias</div>
+              <div style={{fontSize:12,color:C.textoSuave,marginTop:2}}>Dias consecutivos usando o app</div>
+            </div>
+            <div style={{fontSize:36,fontWeight:900,color:sequenciaDias>=7?"#e07b00":C.textoSuave}}>{sequenciaDias}</div>
+          </div>
+          <div style={{display:"flex",gap:4,marginTop:10}}>
+            {[7,14,30].map(meta=>(
+              <div key={meta} style={{flex:1,textAlign:"center",padding:"6px",borderRadius:8,background:sequenciaDias>=meta?C.marsala:C.cardClaro}}>
+                <div style={{fontSize:11,fontWeight:700,color:sequenciaDias>=meta?"#fff":C.textoSuave}}>{meta} dias</div>
+                <div style={{fontSize:9,color:sequenciaDias>=meta?"#f5ede8aa":C.textoSuave}}>{sequenciaDias>=meta?"✅":"🔒"}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Conquistas desbloqueadas */}
+        <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:8}}>🏅 Conquistas ({conquistasDesbloqueadas.length}/{CONQUISTAS.length})</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {CONQUISTAS.map(c=>(
+            <div key={c.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:c.desbloqueada?C.card:C.cardClaro,borderRadius:12,border:`1px solid ${c.desbloqueada?C.marsala+"33":C.cardClaro}`,opacity:c.desbloqueada?1:0.6}}>
+              <div style={{fontSize:28,filter:c.desbloqueada?"none":"grayscale(1)"}}>{c.icone}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700,color:c.desbloqueada?C.marsala:C.textoSuave}}>{c.nome}</div>
+                <div style={{fontSize:11,color:C.textoSuave}}>{c.desc}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:12,fontWeight:700,color:c.desbloqueada?C.dourado:C.textoSuave}}>+{c.pts}pts</div>
+                <div style={{fontSize:10,color:c.desbloqueada?C.verde:C.textoSuave}}>{c.desbloqueada?"✅ Desbloqueada":"🔒 Bloqueada"}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>}
+
       {/* MENSAGENS */}
-      {aba===8&&<Card style={{padding:0,overflow:"hidden"}}>
+      {aba===9&&<Card style={{padding:0,overflow:"hidden"}}>
         <div style={{background:C.marsala,padding:"10px 16px"}}><div style={{fontWeight:700,color:C.dourado,fontSize:13}}>Canal de Comunicação</div><div style={{fontSize:11,color:"#f5ede8"}}>Enviando como: {isMentora?"Wélica Amaro (Mentora)":d.nome}</div></div>
         <div style={{height:320,overflowY:"auto",padding:12,display:"flex",flexDirection:"column",gap:8}}>
           {(d.msgs||[]).map(m=>(<div key={m.id} style={{display:"flex",justifyContent:m.de==="mentora"?"flex-end":"flex-start"}}><div style={{maxWidth:"78%",padding:"8px 12px",borderRadius:m.de==="mentora"?"14px 14px 4px 14px":"14px 14px 14px 4px",background:m.de==="mentora"?C.marsala:C.cardClaro}}><div style={{fontSize:13,color:m.de==="mentora"?"#fff":C.texto}}>{m.texto}</div><div style={{fontSize:10,color:m.de==="mentora"?"#f5ede8aa":C.textoSuave,marginTop:4,textAlign:"right"}}>{m.hora} · {m.de==="mentora"?"Wélica Amaro":d.nome}</div></div></div>))}
@@ -1040,7 +1178,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
       </Card>}
 
       {/* PERFIL */}
-      {aba===9&&<Card>
+      {aba===10&&<Card>
         <div style={{fontSize:14,fontWeight:700,color:C.marsala,marginBottom:16}}>👤 Meu Perfil</div>
         <div style={{fontSize:13,color:C.textoSuave,marginBottom:4}}>Nome: <strong style={{color:C.texto}}>{d.nome}</strong></div>
         <div style={{fontSize:13,color:C.textoSuave,marginBottom:20}}>E-mail: <strong style={{color:C.texto}}>{d.email}</strong></div>
