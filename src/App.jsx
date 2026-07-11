@@ -36,6 +36,7 @@ const CB=[
 
 const CAT_MOV=[{v:"salario",l:"Salário"},{v:"freelance",l:"Freelance"},{v:"bonus",l:"Bônus"},{v:"presente",l:"Presente"},{v:"aluguel_rec",l:"Aluguel recebido"},{v:"alimentacao",l:"Alimentação"},{v:"moradia",l:"Moradia"},{v:"saude",l:"Saúde"},{v:"educacao",l:"Educação"},{v:"lazer",l:"Lazer"},{v:"transporte",l:"Transporte"},{v:"vestuario",l:"Vestuário"},{v:"divida",l:"Dívida"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"}];
 const CAT_AGE=[{v:"conta",l:"Conta fixa"},{v:"servico",l:"Serviço"},{v:"cliente",l:"Pagamento de cliente"},{v:"freelance",l:"Freelance"},{v:"aluguel",l:"Aluguel"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"}];
+const TIPOS_INV=[{v:"acao",l:"Ação BR"},{v:"fii",l:"FII"},{v:"etf",l:"ETF BR"},{v:"etf_us",l:"ETF EUA (USD)"},{v:"stock",l:"Stock EUA (USD)"},{v:"bdr",l:"BDR"},{v:"cripto",l:"Criptoativo (USD)"},{v:"reit",l:"REIT (USD)"},{v:"outro",l:"Outro"}];
 
 const fmt=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
@@ -766,10 +767,14 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           {/* Atualizar preço atual */}
           {ativos.length>0&&<Card>
             <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:10}}>Atualizar Preço Atual</div>
-            <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
-              <div style={{flex:1}}><Sel label="Ativo" value={precoAtualSel} onChange={setPrecoAtualSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome}))]}/></div>
-              <div style={{flex:1}}><Inp label="Preço atual (R$)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0,00"/></div>
-            </div>
+            <Sel label="Ativo" value={precoAtualSel} onChange={v=>{setPrecoAtualSel(v);setPrecoAtualMoeda(isDolar(ativos.find(a=>a.nome===v)?.tipo||"")?"USD":"BRL");}} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:`${a.nome} ${isDolar(a.tipo)?"🇺🇸 USD":"🇧🇷 BRL"`}))]}/>
+            {precoAtualSel&&isDolar(ativos.find(a=>a.nome===precoAtualSel)?.tipo||"")&&<div style={{background:C.azul+"11",border:`1px solid ${C.azul}33`,borderRadius:8,padding:"8px 12px",marginBottom:8}}>
+              <div style={{fontSize:11,color:C.azul,fontWeight:600,marginBottom:6}}>🇺🇸 Ativo em Dólar</div>
+              <Inp label="Preço atual (USD $)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0.00"/>
+              <Inp label="Cotação do dólar (R$)" value={cotacaoAtual} onChange={setCotacaoAtual} placeholder="Ex: 5,80"/>
+              {precoAtualVal&&cotacaoAtual&&<div style={{fontSize:12,color:C.azul}}>= {fmt(parseFloat(precoAtualVal.replace(",","."))*parseFloat(cotacaoAtual.replace(",",".")))}/cota em BRL</div>}
+            </div>}
+            {precoAtualSel&&!isDolar(ativos.find(a=>a.nome===precoAtualSel)?.tipo||"")&&<Inp label="Preço atual (R$)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0,00"/>}
             <Btn onClick={atualizarPrecoAtual} sm>Atualizar</Btn>
           </Card>}
 
@@ -830,14 +835,22 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
 
         {invAba==="comprar"&&<Card>
           <div style={{fontSize:14,fontWeight:700,color:C.marsala,marginBottom:12}}>🛒 Registrar Compra</div>
-          <Sel label="Ativo" value={ativoSel} onChange={setAtivoSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome})),{v:"novo",l:"+ Novo ativo"}]}/>
+          <Sel label="Ativo" value={ativoSel} onChange={setAtivoSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:`${a.nome} ${a.moeda==="USD"?"🇺🇸":""}`})),{v:"novo",l:"+ Novo ativo"}]}/>
           {ativoSel==="novo"&&<div>
-            <Inp label="Nome do ativo (ex: HGLG11)" value={novoAtivo} onChange={setNovoAtivo} placeholder="Ticker ou nome"/>
-            <Sel label="Tipo" value={invTipo} onChange={setInvTipo} options={[{v:"acao",l:"Ação"},{v:"fii",l:"FII"},{v:"etf",l:"ETF"},{v:"cripto",l:"Criptoativo"},{v:"outro",l:"Outro"}]}/>
+            <Inp label="Nome do ativo (ex: HGLG11 ou IVVB11)" value={novoAtivo} onChange={setNovoAtivo} placeholder="Ticker ou nome"/>
+            <Sel label="Tipo" value={invTipo} onChange={setInvTipo} options={TIPOS_INV}/>
           </div>}
+          {(ativoSel==="novo"?isDolar(invTipo):isDolar(ativos.find(a=>a.nome===ativoSel)?.tipo||""))&&<div style={{background:C.azul+"11",border:`1px solid ${C.azul}33`,borderRadius:8,padding:"8px 12px",marginBottom:12}}>
+            <div style={{fontSize:11,color:C.azul,fontWeight:600,marginBottom:6}}>🇺🇸 Ativo em Dólar</div>
+            <Inp label="Preço por cota (USD $)" value={compPreco} onChange={setCompPreco} placeholder="0.00"/>
+            <Inp label="Cotação do dólar (R$)" value={cotacaoDolar} onChange={setCotacaoDolar} placeholder="Ex: 5,80"/>
+            {compPreco&&cotacaoDolar&&<div style={{fontSize:12,color:C.azul,marginBottom:8}}>= {fmt(parseFloat(compPreco.replace(",","."))*parseFloat(cotacaoDolar.replace(",",".")))}/cota em BRL</div>}
+          </div>}
+          {!(ativoSel==="novo"?isDolar(invTipo):isDolar(ativos.find(a=>a.nome===ativoSel)?.tipo||""))&&<Inp label="Preço por cota (R$)" value={compPreco} onChange={setCompPreco} placeholder="0,00"/>}
           <Inp label="Quantidade de cotas" value={compQtd} onChange={setCompQtd} type="number" step="0.0001" placeholder="0"/>
-          <Inp label="Preço por cota (R$)" value={compPreco} onChange={setCompPreco} placeholder="0,00"/>
-          {compQtd&&compPreco&&<div style={{fontSize:13,color:C.azul,marginBottom:12,fontWeight:600}}>Total: {fmt(parseFloat(compQtd||0)*parseFloat(compPreco.replace(",",".")||0))}</div>}
+          {compQtd&&compPreco&&<div style={{fontSize:13,color:C.azul,marginBottom:12,fontWeight:600}}>
+            Total: {fmt(parseFloat(compQtd||0)*(isDolar(ativoSel==="novo"?invTipo:ativos.find(a=>a.nome===ativoSel)?.tipo||"")?parseFloat(compPreco.replace(",","."))*parseFloat(cotacaoDolar.replace(",",".")||1):parseFloat(compPreco.replace(",","."))))}
+          </div>}
           <Inp label="Data (em branco = hoje)" value={compData} onChange={setCompData} type="date"/>
           <Btn onClick={addAtivoECompra}>Registrar Compra</Btn>
         </Card>}
