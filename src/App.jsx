@@ -767,14 +767,14 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           {/* Atualizar preço atual */}
           {ativos.length>0&&<Card>
             <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:10}}>Atualizar Preço Atual</div>
-            <Sel label="Ativo" value={precoAtualSel} onChange={v=>{setPrecoAtualSel(v);setPrecoAtualMoeda(isDolar(ativos.find(a=>a.nome===v)?.tipo||"")?"USD":"BRL");}} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome+" "+(isDolar(a.tipo)?"🇺🇸 USD":"🇧🇷 BRL")}))]}/>
-            {precoAtualSel&&isDolar(ativos.find(a=>a.nome===precoAtualSel)?.tipo||"")&&<div style={{background:C.azul+"11",border:`1px solid ${C.azul}33`,borderRadius:8,padding:"8px 12px",marginBottom:8}}>
+            <Sel label="Ativo" value={precoAtualSel} onChange={v=>{setPrecoAtualSel(v);setPrecoAtualMoeda(isDolar(ativos.find(a=>a.nome===v)?.tipo)?"USD":"BRL");}} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome+" "+(isDolar(a.tipo)?"🇺🇸 USD":"🇧🇷 BRL")}))]}/>
+            {precoEmDolar&&<div style={{background:C.azul+"11",border:`1px solid ${C.azul}33`,borderRadius:8,padding:"8px 12px",marginBottom:8}}>
               <div style={{fontSize:11,color:C.azul,fontWeight:600,marginBottom:6}}>🇺🇸 Ativo em Dólar</div>
               <Inp label="Preço atual (USD $)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0.00"/>
               <Inp label="Cotação do dólar (R$)" value={cotacaoAtual} onChange={setCotacaoAtual} placeholder="Ex: 5,80"/>
               {precoAtualVal&&cotacaoAtual&&<div style={{fontSize:12,color:C.azul}}>= {fmt(parseFloat(precoAtualVal.replace(",","."))*parseFloat(cotacaoAtual.replace(",",".")))}/cota em BRL</div>}
             </div>}
-            {precoAtualSel&&!isDolar(ativos.find(a=>a.nome===precoAtualSel)?.tipo||"")&&<Inp label="Preço atual (R$)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0,00"/>}
+            {precoAtualSel&&!precoEmDolar&&<Inp label="Preço atual (R$)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0,00"/>}
             <Btn onClick={atualizarPrecoAtual} sm>Atualizar</Btn>
           </Card>}
 
