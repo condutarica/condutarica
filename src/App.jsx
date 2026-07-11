@@ -767,7 +767,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           {/* Atualizar preço atual */}
           {ativos.length>0&&<Card>
             <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:10}}>Atualizar Preço Atual</div>
-            <Sel label="Ativo" value={precoAtualSel} onChange={v=>{setPrecoAtualSel(v);setPrecoAtualMoeda(isDolar(ativos.find(a=>a.nome===v)?.tipo||"")?"USD":"BRL");}} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:`${a.nome} ${isDolar(a.tipo)?"🇺🇸 USD":"🇧🇷 BRL"`}))]}/>
+            <Sel label="Ativo" value={precoAtualSel} onChange={v=>{setPrecoAtualSel(v);setPrecoAtualMoeda(isDolar(ativos.find(a=>a.nome===v)?.tipo||"")?"USD":"BRL");}} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome+" "+(isDolar(a.tipo)?"🇺🇸 USD":"🇧🇷 BRL")}))]}/>
             {precoAtualSel&&isDolar(ativos.find(a=>a.nome===precoAtualSel)?.tipo||"")&&<div style={{background:C.azul+"11",border:`1px solid ${C.azul}33`,borderRadius:8,padding:"8px 12px",marginBottom:8}}>
               <div style={{fontSize:11,color:C.azul,fontWeight:600,marginBottom:6}}>🇺🇸 Ativo em Dólar</div>
               <Inp label="Preço atual (USD $)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0.00"/>
