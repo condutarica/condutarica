@@ -36,7 +36,6 @@ const CB=[
 
 const CAT_MOV=[{v:"salario",l:"Salário"},{v:"freelance",l:"Freelance"},{v:"bonus",l:"Bônus"},{v:"presente",l:"Presente"},{v:"aluguel_rec",l:"Aluguel recebido"},{v:"alimentacao",l:"Alimentação"},{v:"moradia",l:"Moradia"},{v:"saude",l:"Saúde"},{v:"educacao",l:"Educação"},{v:"lazer",l:"Lazer"},{v:"transporte",l:"Transporte"},{v:"vestuario",l:"Vestuário"},{v:"divida",l:"Dívida"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"}];
 const CAT_AGE=[{v:"conta",l:"Conta fixa"},{v:"servico",l:"Serviço"},{v:"cliente",l:"Pagamento de cliente"},{v:"freelance",l:"Freelance"},{v:"aluguel",l:"Aluguel"},{v:"pensao",l:"Pensão"},{v:"cartao_credito",l:"Cartão de Crédito"}];
-const TIPOS_INV=[{v:"acao",l:"Ação BR"},{v:"fii",l:"FII"},{v:"etf",l:"ETF BR"},{v:"etf_us",l:"ETF EUA (USD)"},{v:"stock",l:"Stock EUA (USD)"},{v:"bdr",l:"BDR"},{v:"cripto",l:"Criptoativo (USD)"},{v:"reit",l:"REIT (USD)"},{v:"outro",l:"Outro"}];
 
 const fmt=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
@@ -743,144 +742,6 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
 
       {/* INVESTIMENTOS */}
       {aba===3&&<div>
-        <Card style={{background:`linear-gradient(135deg,${C.marsala}11,${C.azul}11)`}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:10}}>📊 Carteira Total</div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {[{l:"Renda Variável",v:fmt(carteiraCalc.reduce((a,x)=>a+(x.valorAtual||x.totalInvestido),0)),c:C.azul},{l:"Renda Fixa",v:fmt(totalInvestidoRF),c:C.verde},{l:"Total",v:fmt(totalCarteira),c:C.marsala}].map(x=>(
-              <div key={x.l} style={{background:C.card,borderRadius:8,padding:"8px 12px",flex:1,minWidth:80,textAlign:"center"}}>
-                <div style={{fontSize:10,color:C.textoSuave}}>{x.l}</div>
-                <div style={{fontSize:13,fontWeight:700,color:x.c}}>{x.v}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <div style={{display:"flex",gap:6,marginBottom:14,flexWrap:"wrap"}}>
-          {[["rv","📈 Carteira"],["comprar","🛒 Comprar"],["vender","💰 Vender"],["rf","🏦 Renda Fixa"]].map(([v,l])=>(
-            <button key={v} onClick={()=>setInvAba(v)} style={{flex:1,padding:"7px 4px",borderRadius:8,fontSize:11,fontWeight:700,cursor:"pointer",background:invAba===v?C.marsala:"transparent",color:invAba===v?"#fff":C.marsala,border:`2px solid ${C.marsala}`}}>{l}</button>
-          ))}
-        </div>
-
-        {invAba==="rv"&&<div>
-          {ativos.length>0&&<Card>
-            <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:10}}>Atualizar Preço Atual</div>
-            <Sel label="Ativo" value={precoAtualSel} onChange={setPrecoAtualSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome}))]}/>
-            {precoAtualSel&&<div>
-              <Inp label="Preço atual (R$)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0,00"/>
-              <Btn onClick={atualizarPrecoAtual} sm>Atualizar</Btn>
-            </div>}
-          </Card>}
-          {carteiraCalc.length===0&&<div style={{color:C.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhum ativo cadastrado ainda.</div>}
-          {carteiraCalc.map(a=>(
-            <Card key={a.id}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                <div>
-                  <div style={{fontWeight:800,fontSize:15,color:C.marsala}}>{a.nome}</div>
-                  <Badge cor={C.azul}>{a.tipo}</Badge>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  {a.precoAtual>0&&<div style={{fontSize:12,color:C.textoSuave}}>Atual: <strong>{fmt(a.precoAtual)}</strong></div>}
-                  {a.precoAtual>0&&<div style={{fontSize:13,fontWeight:700,color:a.pct>=0?C.verde:C.vermelho}}>{fmtPct(a.pct)}</div>}
-                </div>
-              </div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
-                {[{l:"Cotas",v:Number(a.totalCotas).toLocaleString("pt-BR",{maximumFractionDigits:4})},{l:"Preço Médio",v:fmt(a.precoMedio)},{l:"Investido",v:fmt(a.totalInvestido)},{l:"Valor Atual",v:a.precoAtual>0?fmt(a.valorAtual):"—"}].map(x=>(
-                  <div key={x.l} style={{background:C.cardClaro,borderRadius:8,padding:"6px 10px",flex:1,minWidth:70,textAlign:"center"}}>
-                    <div style={{fontSize:10,color:C.textoSuave}}>{x.l}</div>
-                    <div style={{fontSize:12,fontWeight:700,color:C.texto}}>{x.v}</div>
-                  </div>
-                ))}
-              </div>
-              {a.precoAtual>0&&<div style={{fontSize:12,color:a.lucro>=0?C.verde:C.vermelho,fontWeight:600,marginBottom:8}}>Lucro/Prejuízo: {fmt(a.lucro)}</div>}
-              {(a.aportes||[]).length>0&&<div style={{marginTop:8}}>
-                <div style={{fontSize:11,color:C.textoSuave,marginBottom:4,fontWeight:600}}>Aportes:</div>
-                {(a.aportes||[]).map(ap=>(
-                  <div key={ap.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,padding:"4px 0",borderBottom:`1px solid ${C.cardClaro}`}}>
-                    <span style={{color:C.textoSuave,flex:1}}>{ap.data||""} — {Number(ap.qtd||0).toLocaleString("pt-BR",{maximumFractionDigits:4})} cotas × {fmt(ap.preco||0)} = {fmt((ap.qtd||0)*(ap.preco||0))}</span>
-                    <div style={{display:"flex",gap:4,marginLeft:8}}>
-                      <button onClick={()=>{
-                        const nq=window.prompt("Nova quantidade:",ap.qtd);
-                        const np=window.prompt("Novo preço (R$):",ap.preco);
-                        if(nq!==null&&np!==null){
-                          upd("ativos",ativos.map(x=>x.nome===a.nome?{...x,aportes:(x.aportes||[]).map(p=>p.id===ap.id?{...p,qtd:parseFloat(nq)||ap.qtd,preco:parseFloat(np.replace(",","."))||ap.preco}:p)}:x));
-                        }
-                      }} style={{background:"transparent",border:`1px solid ${C.dourado}`,color:C.dourado,borderRadius:6,padding:"2px 6px",fontSize:10,cursor:"pointer"}}>✏</button>
-                      <button onClick={()=>{
-                        if(window.confirm("Excluir este aporte?")){
-                          upd("ativos",ativos.map(x=>x.nome===a.nome?{...x,aportes:(x.aportes||[]).filter(p=>p.id!==ap.id)}:x));
-                        }
-                      }} style={{background:"transparent",border:`1px solid ${C.vermelho}`,color:C.vermelho,borderRadius:6,padding:"2px 6px",fontSize:10,cursor:"pointer"}}>🗑</button>
-                    </div>
-                  </div>
-                ))}
-              </div>}
-              {(a.vendas||[]).length>0&&<div style={{marginTop:8}}>
-                <div style={{fontSize:11,color:C.textoSuave,marginBottom:4,fontWeight:600}}>Vendas:</div>
-                {(a.vendas||[]).map(v=>(<div key={v.id} style={{fontSize:11,color:C.verde,padding:"2px 0"}}>{v.data} — {v.qtd} cotas × {fmt(v.preco)} = {fmt((v.qtd||0)*(v.preco||0))}</div>))}
-              </div>}
-            </Card>
-          ))}
-        </div>}
-
-        {invAba==="comprar"&&<Card>
-          <div style={{fontSize:14,fontWeight:700,color:C.marsala,marginBottom:12}}>🛒 Registrar Compra</div>
-          <Sel label="Ativo" value={ativoSel} onChange={setAtivoSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome})),{v:"novo",l:"+ Novo ativo"}]}/>
-          {ativoSel==="novo"&&<div>
-            <Inp label="Nome do ativo (ex: HGLG11)" value={novoAtivo} onChange={setNovoAtivo} placeholder="Ticker ou nome"/>
-            <Sel label="Tipo" value={invTipo} onChange={setInvTipo} options={TIPOS_INV}/>
-            {isDolar(invTipo)&&<Inp label="Cotação do dólar (R$)" value={cotacaoDolar} onChange={setCotacaoDolar} placeholder="Ex: 5,80"/>}
-          </div>}
-          <Inp label="Preço por cota (R$)" value={compPreco} onChange={setCompPreco} placeholder="0,00"/>
-          <Inp label="Quantidade de cotas" value={compQtd} onChange={setCompQtd} type="number" step="0.0001" placeholder="0"/>
-          {compQtd&&compPreco&&<div style={{fontSize:13,color:C.azul,marginBottom:12,fontWeight:600}}>Total: {fmt(parseFloat(compQtd||0)*parseFloat(compPreco.replace(",",".")||0))}</div>}
-          <Inp label="Data (em branco = hoje)" value={compData} onChange={setCompData} type="date"/>
-          <Btn onClick={addAtivoECompra}>Registrar Compra</Btn>
-        </Card>}
-
-        {invAba==="vender"&&<Card>
-          <div style={{fontSize:14,fontWeight:700,color:C.marsala,marginBottom:12}}>💰 Registrar Venda</div>
-          {carteiraCalc.filter(a=>a.totalCotas>0).length===0
-            ?<div style={{color:C.textoSuave,fontSize:13}}>Nenhum ativo com cotas disponíveis.</div>
-            :<div>
-              <Sel label="Ativo" value={vendaAtivoSel} onChange={setVendaAtivoSel} options={[{v:"",l:"— Selecione —"},...carteiraCalc.filter(a=>a.totalCotas>0).map(a=>({v:a.nome,l:a.nome}))]}/>
-              {vendaAtivoSel&&<div style={{fontSize:12,color:C.textoSuave,marginBottom:12}}>Preço médio: <strong>{fmt(carteiraCalc.find(a=>a.nome===vendaAtivoSel)?.precoMedio||0)}</strong></div>}
-              <Inp label="Quantidade de cotas" value={vendaQtd} onChange={setVendaQtd} type="number" step="0.0001" placeholder="0"/>
-              <Inp label="Preço de venda por cota (R$)" value={vendaPreco} onChange={setVendaPreco} placeholder="0,00"/>
-              {vendaQtd&&vendaPreco&&vendaAtivoSel&&<div style={{fontSize:13,marginBottom:12}}>
-                <span style={{color:C.textoSuave}}>Total: </span>
-                <strong style={{color:C.verde}}>{fmt(parseFloat(vendaQtd||0)*parseFloat(vendaPreco.replace(",",".")||0))}</strong>
-              </div>}
-              <Inp label="Data (em branco = hoje)" value={vendaData} onChange={setVendaData} type="date"/>
-              <Btn onClick={addVenda}>Registrar Venda</Btn>
-            </div>
-          }
-        </Card>}
-
-        {invAba==="rf"&&<div>
-          <Card>
-            <div style={{fontSize:14,fontWeight:700,color:C.marsala,marginBottom:12}}>🏦 Registrar Renda Fixa</div>
-            <Inp label="Descrição" value={rfDesc} onChange={setRfDesc} placeholder="Ex: CDB Nubank 115% CDI"/>
-            <Inp label="Valor aportado (R$)" value={rfVal} onChange={setRfVal} placeholder="0,00"/>
-            <Inp label="Taxa / Rentabilidade" value={rfTaxa} onChange={setRfTaxa} placeholder="Ex: 115% CDI, 12% a.a."/>
-            <Inp label="Vencimento" value={rfVenc} onChange={setRfVenc} type="date"/>
-            <Inp label="Data do aporte (em branco = hoje)" value={rfData} onChange={setRfData} type="date"/>
-            <Btn onClick={addRF}>Registrar</Btn>
-          </Card>
-          {rf.length===0&&<div style={{color:C.textoSuave,textAlign:"center",padding:20,fontSize:13}}>Nenhum título de renda fixa.</div>}
-          {rf.map(r=>(<Card key={r.id} style={{padding:"10px 14px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13,fontWeight:600,color:C.texto}}>{r.descricao}</div>
-                <div style={{fontSize:11,color:C.textoSuave}}>{r.data} · {r.taxa||"—"} · Vence: {r.vencimento||"—"}</div>
-              </div>
-              <div style={{fontWeight:700,color:C.verde}}>{fmt(r.valor)}</div>
-            </div>
-            <div style={{display:"flex",gap:6,marginTop:8}}>
-              <Btn sm cor={C.vermelho} outline onClick={()=>upd("rf",rf.filter(x=>x.id!==r.id))}>🗑 Excluir</Btn>
-            </div>
-          </Card>))}
-        </div>}
-      </div>}
         {/* Resumo da carteira */}
         <Card style={{background:`linear-gradient(135deg,${C.marsala}11,${C.azul}11)`}}>
           <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:10}}>📊 Carteira Total</div>
@@ -905,14 +766,10 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           {/* Atualizar preço atual */}
           {ativos.length>0&&<Card>
             <div style={{fontSize:13,fontWeight:700,color:C.marsala,marginBottom:10}}>Atualizar Preço Atual</div>
-            <Sel label="Ativo" value={precoAtualSel} onChange={v=>{setPrecoAtualSel(v);setPrecoAtualMoeda(isDolar(ativos.find(a=>a.nome===v)?.tipo)?"USD":"BRL");}} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome+" "+(isDolar(a.tipo)?"🇺🇸 USD":"🇧🇷 BRL")}))]}/>
-            {precoEmDolar&&<div style={{background:C.azul+"11",border:`1px solid ${C.azul}33`,borderRadius:8,padding:"8px 12px",marginBottom:8}}>
-              <div style={{fontSize:11,color:C.azul,fontWeight:600,marginBottom:6}}>🇺🇸 Ativo em Dólar</div>
-              <Inp label="Preço atual (USD $)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0.00"/>
-              <Inp label="Cotação do dólar (R$)" value={cotacaoAtual} onChange={setCotacaoAtual} placeholder="Ex: 5,80"/>
-              {precoAtualVal&&cotacaoAtual&&<div style={{fontSize:12,color:C.azul}}>= {fmt(parseFloat(precoAtualVal.replace(",","."))*parseFloat(cotacaoAtual.replace(",",".")))}/cota em BRL</div>}
-            </div>}
-            {precoAtualSel&&!precoEmDolar&&<Inp label="Preço atual (R$)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0,00"/>}
+            <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+              <div style={{flex:1}}><Sel label="Ativo" value={precoAtualSel} onChange={setPrecoAtualSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome}))]}/></div>
+              <div style={{flex:1}}><Inp label="Preço atual (R$)" value={precoAtualVal} onChange={setPrecoAtualVal} placeholder="0,00"/></div>
+            </div>
             <Btn onClick={atualizarPrecoAtual} sm>Atualizar</Btn>
           </Card>}
 
@@ -973,22 +830,14 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
 
         {invAba==="comprar"&&<Card>
           <div style={{fontSize:14,fontWeight:700,color:C.marsala,marginBottom:12}}>🛒 Registrar Compra</div>
-          <Sel label="Ativo" value={ativoSel} onChange={setAtivoSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:`${a.nome} ${a.moeda==="USD"?"🇺🇸":""}`})),{v:"novo",l:"+ Novo ativo"}]}/>
+          <Sel label="Ativo" value={ativoSel} onChange={setAtivoSel} options={[{v:"",l:"— Selecione —"},...ativos.map(a=>({v:a.nome,l:a.nome})),{v:"novo",l:"+ Novo ativo"}]}/>
           {ativoSel==="novo"&&<div>
-            <Inp label="Nome do ativo (ex: HGLG11 ou IVVB11)" value={novoAtivo} onChange={setNovoAtivo} placeholder="Ticker ou nome"/>
-            <Sel label="Tipo" value={invTipo} onChange={setInvTipo} options={TIPOS_INV}/>
+            <Inp label="Nome do ativo (ex: HGLG11)" value={novoAtivo} onChange={setNovoAtivo} placeholder="Ticker ou nome"/>
+            <Sel label="Tipo" value={invTipo} onChange={setInvTipo} options={[{v:"acao",l:"Ação"},{v:"fii",l:"FII"},{v:"etf",l:"ETF"},{v:"cripto",l:"Criptoativo"},{v:"outro",l:"Outro"}]}/>
           </div>}
-          {(ativoSel==="novo"?isDolar(invTipo):isDolar(ativos.find(a=>a.nome===ativoSel)?.tipo||""))&&<div style={{background:C.azul+"11",border:`1px solid ${C.azul}33`,borderRadius:8,padding:"8px 12px",marginBottom:12}}>
-            <div style={{fontSize:11,color:C.azul,fontWeight:600,marginBottom:6}}>🇺🇸 Ativo em Dólar</div>
-            <Inp label="Preço por cota (USD $)" value={compPreco} onChange={setCompPreco} placeholder="0.00"/>
-            <Inp label="Cotação do dólar (R$)" value={cotacaoDolar} onChange={setCotacaoDolar} placeholder="Ex: 5,80"/>
-            {compPreco&&cotacaoDolar&&<div style={{fontSize:12,color:C.azul,marginBottom:8}}>= {fmt(parseFloat(compPreco.replace(",","."))*parseFloat(cotacaoDolar.replace(",",".")))}/cota em BRL</div>}
-          </div>}
-          {!(ativoSel==="novo"?isDolar(invTipo):isDolar(ativos.find(a=>a.nome===ativoSel)?.tipo||""))&&<Inp label="Preço por cota (R$)" value={compPreco} onChange={setCompPreco} placeholder="0,00"/>}
           <Inp label="Quantidade de cotas" value={compQtd} onChange={setCompQtd} type="number" step="0.0001" placeholder="0"/>
-          {compQtd&&compPreco&&<div style={{fontSize:13,color:C.azul,marginBottom:12,fontWeight:600}}>
-            Total: {fmt(parseFloat(compQtd||0)*(isDolar(ativoSel==="novo"?invTipo:ativos.find(a=>a.nome===ativoSel)?.tipo||"")?parseFloat(compPreco.replace(",","."))*parseFloat(cotacaoDolar.replace(",",".")||1):parseFloat(compPreco.replace(",","."))))}
-          </div>}
+          <Inp label="Preço por cota (R$)" value={compPreco} onChange={setCompPreco} placeholder="0,00"/>
+          {compQtd&&compPreco&&<div style={{fontSize:13,color:C.azul,marginBottom:12,fontWeight:600}}>Total: {fmt(parseFloat(compQtd||0)*parseFloat(compPreco.replace(",",".")||0))}</div>}
           <Inp label="Data (em branco = hoje)" value={compData} onChange={setCompData} type="date"/>
           <Btn onClick={addAtivoECompra}>Registrar Compra</Btn>
         </Card>}
