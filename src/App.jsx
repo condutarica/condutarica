@@ -862,8 +862,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
           }
         </Card>}
 
-        {invAba==="usd"&&<div>
-          {/* Resumo USD */}
+        {invAba==="rf"&&<div>
           {(d.ativos_usd||[]).length>0&&<Card style={{background:C.azul+"11",border:`1px solid ${C.azul}33`}}>
             <div style={{fontSize:13,fontWeight:700,color:C.azul,marginBottom:10}}>🇺🇸 Carteira em Dólar</div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
