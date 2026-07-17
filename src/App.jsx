@@ -1140,7 +1140,7 @@ function PainelDados({dados,isMentora,onSalvar,onVoltar,onLogout}){
             </div>
           </Card>))}
         </div>}
-      </div>}
+      </div>)}
 
       {/* EMOCIONAL */}
       {aba===4&&<div>
